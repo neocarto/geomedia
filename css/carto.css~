@@ -1,0 +1,73 @@
+.circ {
+  fill: steelblue;
+  fill-opacity: .8;
+  stroke: #fff;
+  stroke-width:0.5px;	
+}
+
+.label {
+  fill: black;
+  fill-opacity: .8;
+  font-size: 6px;
+  font-weight: 300;
+  text-anchor: middle;
+}
+
+
+.coast{
+  fill: none;
+  stroke: #FFF;
+  stroke-width:0.5px;	
+opacity:0.8;
+}
+
+.background{
+  fill: #5E5E5D;
+  stroke: none;
+}
+
+.bigframe{
+  fill: none;
+  stroke: #000;
+  stroke-width:1px;	
+}
+
+.frames{
+  fill: none;
+  stroke: #000;
+  stroke-width:0.3px;	
+}
+.nuts{
+  fill: #FDCB24;
+  stroke: #FFF;
+stroke-width:0.5px;	
+  }
+
+
+
+.latlong{
+  fill: none;
+  stroke: #000;
+  stroke-width:0.5px;
+  stroke-dasharray:2,2;
+  stroke-opacity:0.5;	
+}
+
+.borders{
+  fill: none;
+  stroke: #FFF;
+  stroke-width:0.3px;
+  stroke-opacity:0.4;
+}
+
+.background_countries{
+  fill:#484848;
+  stroke: none;
+
+}
+
+.ombre{
+  fill:#000;
+  fill-opacity:0.7;
+  stroke:none;
+}

@@ -1,0 +1,183 @@
+<script src="js/d3.v3.min.js"></script>
+<script src="js/topojson.v1.min.js"></script>
+<script src="js/queue.v1.min.js"></script>
+<script src="js/jquery-2.2.1.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script src="//d3js.org/d3.geo.projection.v0.min.js"></script>
+<link href="css/style.css" rel="stylesheet" type="text/css" >
+<link href="css/jquery-ui.css" rel="stylesheet">
+
+
+<html>
+<head></head>   
+<body> 
+<div id="header"></div>
+<div id="menu">
+<select id="proj"></select>
+</div>
+<div id="map"></div>
+</body>    
+</html>
+
+
+<script>
+   
+// HEADER
+var header = d3.select("#header");
+header.append("p")
+	.attr("class","item-menu")
+	.append("a")
+ 	.attr("href", "#")
+	.html("Sources");
+header.append("p")
+	.attr("class","item-menu")
+	.append("a")
+ 	.attr("href", "#")
+	.html("Examples");
+header.append("p")
+	.attr("class","item-menu")
+	.append("a")
+ 	.attr("href", "#")
+	.html("Documentation");
+
+
+// MENU
+var menu =  d3.select("#menu");
+menu.append("h2").html("rotate")
+menu.append("div").attr("id","menu-date")
+menu.append("h2").html("Journaux")
+menu.append("div").attr("id","menu-journaux")
+menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value",0).attr("min",0).attr("max",360).attr("step",1)
+
+//var p = menu.append("select")
+//	.attr("id","test2");
+//d3.json("database/json/projections.json", function(json) {
+//       json.forEach(function(d) {
+//        p.append("option").text(d.name).attr("value",d.projection);
+//       });  
+//});
+
+
+
+$( "#menu-journaux" ).selectmenu();
+
+//get a reference to the select element
+$select = $('#menu-journaux');
+//request the JSON data and parse into the select element
+$.ajax({
+  url: 'database/json/projections.json',
+  dataType:'JSON',
+  success:function(data){
+    //clear the current content of the select
+    $select.html('');
+    //iterate over the data and append a select option
+    $.each(data, function(key, val){
+      $select.append('<option id="' + val.id + '">' + val.name + '</option>');
+    })
+  },
+  error:function(){
+    //if there is an error append a 'none available' option
+    $select.html('<option id="-1">none available</option>');
+  }
+});
+
+$( "#menu-date" ).slider({
+	range: false,
+	values: 1,
+	min:1, 
+	max:52, 
+});
+
+
+d3.select("#form_rotate").on("input", function() { 
+     projection.rotate([eval(this.value),0,0]);
+    svg.selectAll("path").attr("d", path);
+    });
+
+// MAP
+
+var width = 1000,
+    height = 600;
+
+var svg = d3.select("#map").append("svg")
+      .attr("width", width)
+      .attr("height", height)
+
+var projection = d3.geo.armadillo()
+    .scale(237)
+    .translate([500,400])
+    .parallel(20)
+    .rotate([0, 0, 0])
+    .precision(.1);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+var graticule = d3.geo.graticule();
+
+
+
+svg.append("path")
+    .datum(graticule)
+    .attr("class", "graticule")
+    .attr("d", path);
+
+var bottomlayer = svg.append("g").attr("id","bottomlayer");
+var dynamiclayer = svg.append("g").attr("id","dynamiclayer");
+var toplayer = svg.append("g").attr("id","toplayer");
+var layout = svg.append("g").attr("id","layout");
+
+// Files to load    
+    queue()
+    .defer(d3.json, "database/geom/world.topojson")
+    .await(ready);
+
+function ready(error,world) {
+  if (error) throw error;
+    
+ 
+// ***** Dynamic Layers (for thematic representation if needed) *****
+svg.append("g")
+	.attr("id","countries")
+	.attr("class", "land")
+        .selectAll(".subunit")
+        .data(topojson.feature(world, world.objects.w).features)
+        .enter().append("path")
+        .attr("d", path)  
+    
+    
+    // Source
+   svg.append("g").append("text").text("Source: Nicolas Lambert, 2016")
+        .attr("x", 0+5).attr("y", height-5)
+        .style({"font-size":"12px", "fill":"#919091","font-family":"tahoma, geneva, sans-serif","font-style":"italic"});
+
+ 
+    // Logo
+svg.append("g").append("svg:image")
+        .attr('x',773)
+        .attr('y',500)
+        .attr('width', 120)
+        .attr('height', 100)
+        .attr("xlink:href","img/logo_riate.svg");
+
+
+
+svg.append("defs").append("path")
+    .datum({type: "Sphere"})
+    .attr("id", "sphere")
+    .attr("d", path);
+
+svg.append("use")
+    .attr("class", "stroke")
+    .attr("xlink:href", "#sphere");
+
+
+
+
+    
+} 
+
+
+</script>
+
+

@@ -1,0 +1,7 @@
+Nicolas Lambert, 2016
+
+ogr2ogr -t_srs EPSG:4326 w.shp NED_10m_eckertIV_v2_FINALE.shp
+ogr2ogr -f GeoJSON w.json w.shp
+topojson -o world.topojson --id-property ISO3 --properties name=name -- w.json
+rm w.*
+

@@ -1,0 +1,37 @@
+ID_Flux	Langue_code	Pays_code	jrnl_code	Type_flux	Journal_Name	Type_periodique	ville_code	ville_Name	UTC.GMT	Olson_zone	URL	Name_Flux	2014-01-01	2015-06-30	NbItems_raw	MeanDay_Item_Raw	MedianDay_Item_raw	ModeDay_Item_raw	SDDay_Item_raw
+3463	en	AUS	austra	int	the australian	quotidien	syd	NA	NA	NA	http://www.theaustralian.com.au	en_AUS_austra_int	Actif	Actif	10236	19	19	40	7
+143	en	AUS	hersun	int	Herald Sun	quotidien	mlb	NA	NA	NA	http://www.heraldsun.com.au/	en_AUS_hersun_int	Actif	Actif	33356	63	63	136	30
+1333	en	CAN	starca	int	The Star	quotidien	tor	NA	NA	NA	http://www.thestar.com	en_CAN_starca_int	Actif	Actif	11022	21	20	63	7
+9841	en	CHN	chinad	int	China Daily	quotidien	pkn	NA	NA	NA	http://www.chinadaily.com.cn	en_CHN_chinad_int	Actif	Actif	19303	39	34	280	32
+9844	en	CHN	mopost	int	South China Morning Post	quotidien	hkg	NA	NA	NA	http://www.scmp.com	en_CHN_mopost_int	Actif	Actif	11829	23	23	58	9
+89	en	GBR	dailyt	int	Daily telegraph	quotidien	ldn	NA	NA	NA	http://www.telegraph.co.uk/	en_GBR_dailyt_int	Actif	Actif	32138	61	63	127	20
+16073	en	GBR	guardi	int	The Guardian	quotidien	ldn	NA	NA	NA	http://www.theguardian.com/	en_GBR_guardi_int	Actif	Actif	64593	123	111,5	416	63
+1105401	en	IND	hindti	int	Hindustan Times	quotidien	del	NA	NA	NA	http://www.hindustantimes.com/	en_IND_hindti_int	Inactif	Actif	9114	22	21	64	10
+23384	en	IND	tindia	int	The times of India	quotidien	bom	NA	NA	NA	http://timesofindia.indiatimes.com	en_IND_tindia_int	Actif	Actif	11161	21	18	56	9
+939315	en	JPN	jatime	int	Japan Times	quotidien	tok	NA	NA	NA	http://www.japantimes.co.jp/	en_JPN_jatime_int	Inactif	Actif	11432	26	25	67	10
+1361811	en	MLT	tmalta	int	times of malta	quotidien	val	NA	NA	NA	http://www.timesofmalta.com	en_MLT_tmalta_int	Inactif	Actif	8834	21	21	51	6
+1352543	en	MYS	starmy	int	The Star (malaisie)	quotidien	pen	NA	NA	NA	http://www.thestar.com.my/	en_MYS_starmy_int	Inactif	Actif	39249	92	94,5	170	27
+16465	en	NGA	thiday	int	This Day	quotidien	lag	NA	NA	NA	http://www.thisdaylive.com	en_NGA_thiday_int	Actif	Actif	26516	50	50	86	10
+16473	en	NZL	nzhera	int	New Zealand Herald	quotidien	akl	NA	NA	NA	http://www.nzherald.co.nz/	en_NZL_nzhera_int	Actif	Actif	92534	174	177	289	58
+16462	en	PAK	newint	int	The News International	quotidien	khi	NA	NA	NA	http://www.thenews.com.pk/	en_PAK_newint_int	Actif	Actif	9152	17	18	41	5
+1361848	en	SGP	twoday	int	Today	quotidien	sgp	NA	NA	NA	http://www.todayonline.com	en_SGP_twoday_int	Inactif	Actif	41472	99	103	195	40
+1501	en	USA	nytime	int	The New York Times	quotidien	nyk	NA	NA	NA	http://www.nytimes.com	en_USA_nytime_int	Actif	Actif	31791	61	64	109	20
+15986	en	USA	wapost	int	Washington Post	quotidien	wsg	NA	NA	NA	http://www.washingtonpost.com/	en_USA_wapost_int	Actif	Actif	14032	26	26	64	10
+15973	en	ZWE	chroni	int	Chronicle	quotidien	blw	NA	NA	NA	http://www.chronicle.co.zw	en_ZWE_chroni_int	Inactif	Actif	2682	7	7	19	3
+764015	es	ARG	nacion	int	La Nacion	quotidien	bna	NA	NA	NA	http://www.lanacion.com.ar/	es_ARG_nacion_int	Inactif	Actif	8509	19	18	53	6
+1037	es	BOL	larazo	int	La Razon	quotidien	paz	NA	NA	NA	http://www.la-razon.com/	es_BOL_larazo_int	Actif	Actif	6454	13	13	41	6
+756856	es	BOL	patria	int	La patria	quotidien	oru	NA	NA	NA	http://lapatriaenlinea.com	es_BOL_patria_int	Inactif	Actif	4920	11	10	31	5
+875682	es	CHL	mercur	int	El mercurio	quotidien	san	NA	NA	NA	http://www.emol.com/	es_CHL_mercur_int	Inactif	Inactif	12338	31	31	55	7
+876159	es	CHL	tercer	int	La Tercera	quotidien	san	NA	NA	NA	http://www.latercera.com/	es_CHL_tercer_int	Inactif	Actif	12155	28	28	55	8
+767325	es	ESP	catalu	int	El periodico de Catalunya	quotidien	bar	NA	NA	NA	http://www.elperiodico.com/es/	es_ESP_catalu_int	Inactif	Actif	8359	19	18	57	9
+766466	es	ESP	elpais	int	El Pais	quotidien	mad	NA	NA	NA	http://elpais.com/	es_ESP_elpais_int	Inactif	Actif	16725	37	32	136	21
+763910	es	MEX	jormex	int	La Jordana (Mex)	quotidien	mex	NA	NA	NA	http://www.jornada.unam.mx/	es_MEX_jormex_int	Inactif	Actif	3811	9	8	22	2
+763300	es	MEX	univer	int	El Universal	quotidien	mex	NA	NA	NA	http://www.eluniversal.com.mx/	es_MEX_univer_int	Inactif	Actif	19991	44	44	84	13
+874966	es	VEN	univer	int	El Universal (VEN)	quotidien	car	NA	NA	NA	http://www.eluniversal.com/	es_VEN_univer_int	Inactif	Actif	24239	55	54	103	14
+1056291	fr	BEL	derheu	int	Dernière Heure	quotidien	brx	NA	NA	NA	http://www.dhnet.be/	fr_BEL_derheu_int	Inactif	Actif	4685	11	9	58	7
+165	fr	BEL	lesoir	int	Le soir	quotidien	brx	NA	NA	NA	http://www.lesoir.be	fr_BEL_lesoir_int	Actif	Actif	16388	31	29	103	15
+1358	fr	CAN	jmontr	int	Le Journal de Montreal	quotidien	mtl	NA	NA	NA	http://www.journaldemontreal.com/	fr_CAN_jmontr_int	Actif	Actif	6159	16	17	53	12
+58	fr	DZA	elwata	int	El Watan	quotidien	alg	NA	NA	NA	http://www.elwatan.com/	fr_DZA_elwata_int	Actif	Actif	2329	5	4	21	3
+60	fr	DZA	xpress	int	LExpression	quotidien	alg	NA	NA	NA	http://www.lexpressiondz.com	fr_DZA_xpress_int	Actif	Actif	3575	8	8	98	5
+10038	fr	FRA	lepari	int	Le Parisien	quotidien	sto	NA	NA	NA	http://www.leparisien.fr/	fr_FRA_lepari_int	Actif	Actif	7445	14	14	48	7
+281409	fr	FRA	lmonde	int	Le Monde	quotidien	par	NA	NA	NA	http://lemonde.fr	fr_FRA_lmonde_int	Actif	Actif	21530	42	42	99	17

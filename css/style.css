@@ -1,0 +1,117 @@
+/* Structure */
+
+body {
+    height:100%;
+    width:100%;
+    margin:0px;
+    padding:0px;
+    font-family:"palatino linotype", palatino, serif;
+    color: #ffffff;
+font: 62.5% "Trebuchet MS", sans-serif;
+} 
+
+
+#header {
+    width: 100%;
+    height:40px;
+    padding:0px;
+    box-sizing: border-box;
+    float: left;
+    background-color : black; 
+    border-bottom: 1px outset white;
+    font-size: 250%;
+}
+    
+#menu {
+    padding:10px;
+    box-sizing: border-box;
+    width: 20%;
+    float: left;
+    height : calc(100% - 40px);
+    background-color : #5d5d5d; 
+    border-right: 1px outset white;
+}
+
+#map {
+    width: 80%;
+    box-sizing: border-box;
+    height : calc(100% - 40px);
+    float: left;
+    background-color : #FFF; 
+    padding:10px;
+    box-sizing: border-box;    
+
+}
+
+/* Global */
+a {
+	font-family: 'Enriqueta', arial, serif;
+	line-height: 1.25;
+	margin: 0 0 10px;
+	font-size: 12px;
+	font-weight: bold;
+	color : #99a8c4;
+	text-decoration:none;
+
+}
+
+
+/* Header & menu */
+
+.item-menu {
+   	height:30px;
+	padding:0px;
+	margin:0 20 0 0;
+	vertical-align:middle;
+	float:right;
+
+
+}
+
+a.menu {
+line-height:30px;
+color:white;
+}
+
+p.menu {
+color:#62849b;
+font-family: 'Enriqueta', arial, serif;
+	line-height: 1.25;
+	margin: 0 0 10px;
+	font-size: 12px;
+	font-weight: bold;
+
+
+}
+
+/* Map styles */
+.stroke {
+  fill: none;
+  stroke: #000;
+  stroke-width: 3px;
+}
+
+.fill {
+  fill: #fff;
+}
+
+.graticule {
+  fill: none;
+  stroke: #777;
+  stroke-width: .5px;
+  stroke-opacity: .5;
+}
+
+.land {
+  fill: #CCB387;
+  stroke: white;
+  stroke-width: 1px; 
+
+}
+
+.boundary {
+  fill: none;
+  stroke: #fff;
+  stroke-width: .5px;
+}
+
