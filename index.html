@@ -58,9 +58,9 @@ var menu =  d3.select("#menu");
 
 // Newspapers
 
-menu.append("h2").html("Newspapers")
-menu.append("div").append("select")
-	.attr("id","menu-journaux")
+menu.append("h2").html("<li><span id ='rss-title'>Newspapers</span></li>")
+menu.append("div").attr("id","menu-rss").append("select")
+	.attr("id","select-rss")
 	.attr("style","width:250px ; height:100px");
 
 
@@ -68,34 +68,44 @@ $.getJSON('database/output/feeds.json', null, function(data) {
   fillSelect(data);
 });
 
-$( "#menu-journaux" ).selectmenu();
+$( "#select-rss" ).selectmenu();
 function fillSelect(data) {
     $.each(data, function(i, item) {
-    $( "#menu-journaux" ).append("<option value = "+item.id+">"+item.name+"</option>");
+    $( "#select-rss" ).append("<option value = "+item.id+">"+item.name+"</option>");
   });
 }
+menu.append("div").attr("id","spacerss").append("br")
+menu.append("div").attr("id","allrss")
+d3.select("#allrss").html("<input type='checkbox' id='checkrss' name='checkrss'><label for='checkrss'>Select all</label>")
+$( "#allrss" ).buttonset();
 
 // Countries
 
-menu.append("h2").html("Countries")
-menu.append("div").append("select")
-	.attr("id","menu-countries")
+menu.append("h2").html("<li><span id ='countries-title'>Countries</span></li>")
+menu.append("div").attr("id","menu-countries").append("select")
+	.attr("id","select-countries")
 	.attr("style","width:250");
+menu.append("div").attr("id","spacecountries").append("br")
+menu.append("div").attr("id","allcountries")
+d3.select("#allcountries").html("<input type='checkbox' id='checkcountries' name='checkcountries'><label for='checkcountries'>Select all</label>")
+$( "#allcountries" ).buttonset();
 
 $.getJSON('database/output/countries.json', null, function(data) {
   fillSelect2(data);
 });
 
-$( "#menu-countries" ).selectmenu();
+$( "#select-countries" ).selectmenu();
 function fillSelect2(data) {
     $.each(data, function(i, item) {
-    $( "#menu-countries" ).append("<option value = "+item.id+">"+item.name+"</option>");
+    $( "#select-countries" ).append("<option value = "+item.id+">"+item.name+"</option>");
   });
 }
 
-// Weeks
 
-menu.append("h2").html("Week "+"<span id='nbweek'>"+1+"</span>")
+
+// Weeks
+myweek=1;
+menu.append("div").attr("id","menu-date-title").append("h2").html("<li>Time (<span id='nbweek'>"+myweek+"</span>)</li>")
 menu.append("div").attr("id","menu-date")
 
 
@@ -107,10 +117,18 @@ menu.append("div").attr("id","menu-date")
       value: 1,
       slide: function( event, ui ) {
         $( "#nbweek" ).html( ui.value );
+	myweek =  ui.value;
       }
     });
-    $( "#nbweek" ).val( $( "#menu-date" ).slider( "value" ) );
+  $( "#nbweek" ).val( $( "#menu-date" ).slider( "value" ) );
+
   });
+menu.append("div").attr("id","spaceweeks").append("br")
+
+menu.append("div").attr("id","allweeks")
+d3.select("#allweeks").html("<input type='checkbox' id='checkweek' name='checkweek'><label for='checkweek'>Select all</label>")
+$( "#allweeks" ).buttonset();
+
 
 // Modele
 menu.append("h2").html("Model")
@@ -122,7 +140,10 @@ $( "#radioset" ).buttonset();
 
 // Rotate
 
-menu.append("h2").html("Rotate")
+menu.append("br")
+menu.append("br")
+menu.append("br")
+menu.append("br")
 menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value",0).attr("min",0).attr("max",360).attr("step",1)
 
 d3.select("#form_rotate").on("input", function() { 
@@ -130,6 +151,61 @@ d3.select("#form_rotate").on("input", function() {
     svg.selectAll("path").attr("d", path);
     });
 
+
+// Menu jquery interactivity
+
+$("#checkrss").change(function() {
+    if(this.checked) {
+	$("#menu-rss").hide();
+	$("#spacerss").hide();
+	$("#rss-title").empty();
+	$("#rss-title").append("Newspapers (All)");
+	}
+    else {
+	$("#menu-rss").show();
+	$("#spacerss").show();
+	$("#rss-title").empty();
+	$("#rss-title").append("Newspapers");
+	}
+});
+
+$("#checkcountries").change(function() {
+    if(this.checked) {
+	$("#menu-countries").hide();
+	$("#spacecountries").hide();
+	$("#countries-title").empty();
+	$("#countries-title").append("Countries (All)");
+	}
+    else {
+	$("#menu-countries").show();
+	$("#spacecountries").show();
+	$("#countries-title").empty();
+	$("#countries-title").append("Countries");
+	}
+});
+
+
+$("#checkweek").change(function() {
+    if(this.checked) {
+	$("#menu-date").hide();
+	$("#spaceweeks").hide();
+	$("#nbweek").empty();
+	$("#nbweek").append("All");
+	}
+    else {
+	$("#menu-date").show();
+	$("#spaceweeks").show();
+	$("#nbweek").empty();
+	$("#nbweek").append(myweek);	
+	}
+
+
+});
+
+
+
+
+// catch menu values for d3
 
 
 // ***************************************************************************   
@@ -233,17 +309,12 @@ svg.append("g").append("svg:image")
         .attr("xlink:href","img/logo_riate.svg");
 
 
-
+   // map title
  var maptitle ="Title";
-    var posx = 10; var posy = 45;
+    var posx = width/2; var posy = 50;
     layout.append("text").text(maptitle)
         .attr("x", posx).attr("y", posy)
-        .style({"font-size":"35px", "fill":"#919091","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
-        .attr("class", "shadow")
-	.attr("text-anchor","center");
-    layout.append("text").text(maptitle)
-        .attr("x", posx).attr("y", posy)
-        .style({"font-size":"35px", "fill":"#ff4500","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
+        .style({"font-size":"25px", "fill":"#6B8087","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
 	.attr("text-anchor","middle");
 
    

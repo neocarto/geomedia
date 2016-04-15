@@ -6,7 +6,7 @@ body {
     margin:0px;
     padding:0px;
     font-family:"palatino linotype", palatino, serif;
-    color: #ffffff;
+    color: #000000;
 font: 62.5% "Trebuchet MS", sans-serif;
 } 
 
@@ -28,8 +28,10 @@ font: 62.5% "Trebuchet MS", sans-serif;
     width: 270px;
     float: left;
     height : calc(100% - 60px);
-    background-color : #5d5d5d; 
-    border-right: 1px outset white;
+    background-color : white; 
+    border-right: 1px outset #OOOOOO;
+
+
 }
 
 #map {
@@ -75,6 +77,12 @@ a {
 a.menu {
 line-height:30px;
 color:white;
+}
+
+ul.ui-menu
+{
+    max-height: 300px;
+    width: 100%;
 }
 
 p.menu {
@@ -126,4 +134,6 @@ font-family: 'Enriqueta', arial, serif;
   stroke: #fff;
   stroke-width: .5px;
 }
+
+
 
