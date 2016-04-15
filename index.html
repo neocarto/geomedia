@@ -9,92 +9,132 @@
 
 
 <html>
-<head></head>   
+<head>
+<meta charset="UTF-8">
+</head>   
 <body> 
 <div id="header"></div>
-<div id="menu">
-<select id="proj"></select>
-</div>
+<div id="menu"></div>
 <div id="map"></div>
 </body>    
 </html>
 
 
 <script>
-   
-// HEADER
+
+// ***************************************************************************   
+// HEADER ********************************************************************
+// *************************************************************************** 
+
 var header = d3.select("#header");
 header.append("p")
-	.attr("class","item-menu")
+	.attr("class","item-header")
 	.append("a")
- 	.attr("href", "#")
+ 	.attr("href", "https://github.com/neocarto/geomedia")
+	.attr("target","_blank")
 	.html("Sources");
 header.append("p")
-	.attr("class","item-menu")
+	.attr("class","item-header")
 	.append("a")
  	.attr("href", "#")
 	.html("Examples");
 header.append("p")
-	.attr("class","item-menu")
+	.attr("class","item-header")
 	.append("a")
  	.attr("href", "#")
 	.html("Documentation");
+header.append("p")
+	.attr("class","item-logo")
+	.html("<img src='img/geomedia_logo.png'></img>");
 
 
-// MENU
+
+// ***************************************************************************   
+// MENU **********************************************************************
+// *************************************************************************** 
+
 var menu =  d3.select("#menu");
-menu.append("h2").html("rotate")
-menu.append("div").attr("id","menu-date")
-menu.append("h2").html("Journaux")
-menu.append("div").attr("id","menu-journaux")
-menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value",0).attr("min",0).attr("max",360).attr("step",1)
-
-//var p = menu.append("select")
-//	.attr("id","test2");
-//d3.json("database/json/projections.json", function(json) {
-//       json.forEach(function(d) {
-//        p.append("option").text(d.name).attr("value",d.projection);
-//       });  
-//});
 
 
+// Newspapers
+
+menu.append("h2").html("Newspapers")
+menu.append("div").append("select")
+	.attr("id","menu-journaux")
+	.attr("style","width:250px ; height:100px");
+
+
+$.getJSON('database/output/feeds.json', null, function(data) {
+  fillSelect(data);
+});
 
 $( "#menu-journaux" ).selectmenu();
+function fillSelect(data) {
+    $.each(data, function(i, item) {
+    $( "#menu-journaux" ).append("<option value = "+item.id+">"+item.name+"</option>");
+  });
+}
 
-//get a reference to the select element
-$select = $('#menu-journaux');
-//request the JSON data and parse into the select element
-$.ajax({
-  url: 'database/json/projections.json',
-  dataType:'JSON',
-  success:function(data){
-    //clear the current content of the select
-    $select.html('');
-    //iterate over the data and append a select option
-    $.each(data, function(key, val){
-      $select.append('<option id="' + val.id + '">' + val.name + '</option>');
-    })
-  },
-  error:function(){
-    //if there is an error append a 'none available' option
-    $select.html('<option id="-1">none available</option>');
-  }
+// Countries
+
+menu.append("h2").html("Countries")
+menu.append("div").append("select")
+	.attr("id","menu-countries")
+	.attr("style","width:250");
+
+$.getJSON('database/output/countries.json', null, function(data) {
+  fillSelect2(data);
 });
 
-$( "#menu-date" ).slider({
-	range: false,
-	values: 1,
-	min:1, 
-	max:52, 
-});
+$( "#menu-countries" ).selectmenu();
+function fillSelect2(data) {
+    $.each(data, function(i, item) {
+    $( "#menu-countries" ).append("<option value = "+item.id+">"+item.name+"</option>");
+  });
+}
 
+// Weeks
+
+menu.append("h2").html("Week "+"<span id='nbweek'>"+1+"</span>")
+menu.append("div").attr("id","menu-date")
+
+
+  $(function() {
+    $( "#menu-date" ).slider({
+      range: "max",
+      min: 1,
+      max: 52,
+      value: 1,
+      slide: function( event, ui ) {
+        $( "#nbweek" ).html( ui.value );
+      }
+    });
+    $( "#nbweek" ).val( $( "#menu-date" ).slider( "value" ) );
+  });
+
+// Modele
+menu.append("h2").html("Model")
+menu.append("div").attr("id","radioset")
+d3.select("#radioset").html("<input type='radio' id='radio1' name='radio' checked='checked'><label for='radio1'>Gravitaire</label><input type='radio' id='radio2' name='radio'><label for='radio2'>Aléatoire</label><input type='radio' id='radio3' name='radio'><label for='radio3'>Model 3</label>")
+$( "#radioset" ).buttonset();
+
+
+
+// Rotate
+
+menu.append("h2").html("Rotate")
+menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value",0).attr("min",0).attr("max",360).attr("step",1)
 
 d3.select("#form_rotate").on("input", function() { 
      projection.rotate([eval(this.value),0,0]);
     svg.selectAll("path").attr("d", path);
     });
 
-// MAP
+
+
+// ***************************************************************************   
+// MAP ***********************************************************************
+// *************************************************************************** 
 
 var width = 1000,
     height = 600;
@@ -102,6 +142,10 @@ var width = 1000,
 var svg = d3.select("#map").append("svg")
       .attr("width", width)
       .attr("height", height)
+
+ var radialGradient = svg.append("defs").append("radialGradient").attr("id", "radial-gradient");
+ radialGradient.append("stop").attr("offset", "50%").attr("stop-color", "#f3f6fa");
+ radialGradient.append("stop").attr("offset", "100%").attr("stop-color", "#d3e0fa");  
 
 var projection = d3.geo.armadillo()
     .scale(237)
@@ -115,12 +159,30 @@ var path = d3.geo.path()
 
 var graticule = d3.geo.graticule();
 
+var defs = svg.append("defs");
 
+defs.append("clipPath")
+    .attr("id", "clip")
+  .append("use")
+    .attr("xlink:href", "#sphere");
+
+svg.append("defs").append("path")
+    .datum({type: "Sphere"})
+    .attr("id", "sphere")
+    .attr("d", path)
+    .style("fill", "url(#radial-gradient)")
+    .style("stroke","none") ;
+
+svg.append("use")
+    .attr("class", "stroke")
+    .attr("xlink:href", "#sphere");
 
 svg.append("path")
     .datum(graticule)
     .attr("class", "graticule")
+    .attr("clip-path", "url(#clip)")
     .attr("d", path);
+
 
 var bottomlayer = svg.append("g").attr("id","bottomlayer");
 var dynamiclayer = svg.append("g").attr("id","dynamiclayer");
@@ -143,7 +205,17 @@ svg.append("g")
         .selectAll(".subunit")
         .data(topojson.feature(world, world.objects.w).features)
         .enter().append("path")
-        .attr("d", path)  
+        .attr("d", path)
+        .attr("clip-path", "url(#clip)")  
+
+  svg.append("g")
+      .attr("id","coasts")
+      .append("path")
+      .datum(topojson.merge(world, world.objects.w.geometries))
+      .attr("class", "coasts")
+      .attr("d", path)
+      .attr("clip-path", "url(#clip)")  
+
     
     
     // Source
@@ -162,19 +234,19 @@ svg.append("g").append("svg:image")
 
 
 
-svg.append("defs").append("path")
-    .datum({type: "Sphere"})
-    .attr("id", "sphere")
-    .attr("d", path);
+ var maptitle ="Title";
+    var posx = 10; var posy = 45;
+    layout.append("text").text(maptitle)
+        .attr("x", posx).attr("y", posy)
+        .style({"font-size":"35px", "fill":"#919091","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
+        .attr("class", "shadow")
+	.attr("text-anchor","center");
+    layout.append("text").text(maptitle)
+        .attr("x", posx).attr("y", posy)
+        .style({"font-size":"35px", "fill":"#ff4500","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
+	.attr("text-anchor","middle");
 
-svg.append("use")
-    .attr("class", "stroke")
-    .attr("xlink:href", "#sphere");
-
-
-
-
-    
+   
 } 
 
 

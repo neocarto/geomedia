@@ -13,7 +13,7 @@ font: 62.5% "Trebuchet MS", sans-serif;
 
 #header {
     width: 100%;
-    height:40px;
+    height:60px;
     padding:0px;
     box-sizing: border-box;
     float: left;
@@ -25,17 +25,17 @@ font: 62.5% "Trebuchet MS", sans-serif;
 #menu {
     padding:10px;
     box-sizing: border-box;
-    width: 20%;
+    width: 270px;
     float: left;
-    height : calc(100% - 40px);
+    height : calc(100% - 60px);
     background-color : #5d5d5d; 
     border-right: 1px outset white;
 }
 
 #map {
-    width: 80%;
+    width: 750;
     box-sizing: border-box;
-    height : calc(100% - 40px);
+    height : calc(100% - 60px);
     float: left;
     background-color : #FFF; 
     padding:10px;
@@ -58,14 +58,18 @@ a {
 
 /* Header & menu */
 
-.item-menu {
-   	height:30px;
+.item-header {
 	padding:0px;
-	margin:0 20 0 0;
+	margin-right:10;
 	vertical-align:middle;
 	float:right;
+}
 
-
+.item-logo {
+	padding:0px;
+	margin:0 0 0 0;
+	vertical-align:middle;
+	float:left;
 }
 
 a.menu {
@@ -96,16 +100,24 @@ font-family: 'Enriqueta', arial, serif;
 }
 
 .graticule {
-  fill: none;
-  stroke: #777;
-  stroke-width: .5px;
-  stroke-opacity: .5;
+	fill:none ;
+	stroke: #777;
+	stroke-width: 0.5px; 
+	stroke-opacity: .5;
+	stroke-dasharray: 2 
 }
 
 .land {
-  fill: #CCB387;
+  fill: #DBD4C8;
   stroke: white;
-  stroke-width: 1px; 
+  stroke-width: 0.6px; 
+
+}
+
+.coasts {
+  fill: none;
+  stroke: #5F98C7;
+  stroke-width: 0.8px; 
 
 }
 
