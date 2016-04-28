@@ -1,13 +1,9 @@
 Nicolas Lambert, 2016
 
 ogr2ogr -t_srs EPSG:4326 w.shp NED_10m_eckertIV_v2.shp
+ogr2ogr -t_srs EPSG:4326 c.shp NED_10m_eckertIV_centres_v2.shp
 ogr2ogr -f GeoJSON w.json w.shp
-topojson -o world.topojson --id-property ISO3 --properties name=name -- w.json
+ogr2ogr -f GeoJSON c.json c.shp
+topojson -o world.topojson --id-property ISO3 --properties name=name -- w.json c.json
 rm w.*
-
-ogr2ogr -t_srs EPSG:4326 w.shp ne_50m_admin_0_countries.shp
-ogr2ogr -f GeoJSON w.json w.shp
-topojson -o world2.topojson --id-property ISO3 --properties name=name -- w.json
-rm w.*
-
-
+rm c.*

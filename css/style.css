@@ -97,15 +97,6 @@ font-family: 'Enriqueta', arial, serif;
 }
 
 /* Map styles */
-.stroke {
-  fill: none;
-  stroke: #000;
-  stroke-width: 3px;
-}
-
-.fill {
-  fill: #fff;
-}
 
 .graticule {
 	fill:none ;
@@ -133,6 +124,13 @@ font-family: 'Enriqueta', arial, serif;
   fill: none;
   stroke: #fff;
   stroke-width: .5px;
+}
+
+
+.bubble { 
+  stroke : #fff ;
+  fill : red;
+  stroke-width: 1px;
 }
 
 
