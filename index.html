@@ -215,12 +215,14 @@ $("#checkweek").change(function() {
 // MAP ***********************************************************************
 // *************************************************************************** 
 
+
+// PARAMETRE GÉNÉRAUX **************************************
+
 var width = 1000,
     height = 600;
 
 
-var stockById = d3.map();
-var rateById = d3.map();
+var k = 1;
 var nclass = 8;
 var palette = "Reds";
   
@@ -271,50 +273,48 @@ svg.append("g").attr("id","grat").append("path")
 
 
 
-// Files to load    
-    queue()
-    .defer(d3.json, "database/geom/world.topojson")
-    .await(ready);
 
-function ready(error,world) {
-  if (error) throw error;
-    
+// BASE MAP **************************************
 
-svg.append("g")
-	.attr("id","countries")
-	.attr("class", "land")
-        .selectAll(".subunit")
-        .data(topojson.feature(world, world.objects.w).features)
-        .enter().append("path")
-        .attr("d", path)
-        .attr("clip-path", "url(#clip)")  
 
-  svg.append("g")
-      .attr("id","coasts")
-      .append("path")
-      .datum(topojson.merge(world, world.objects.w.geometries))
-      .attr("class", "coasts")
-      .attr("d", path)
-      .attr("clip-path", "url(#clip)")  
 
-// Cercles proportionnels
-  svg.append("g")
-        .attr("id", "propsymbols")
-        .attr("class",palette + " bubble")
-        .selectAll("circle")
-        .data(topojson.feature(world, world.objects.c).features)
-        .enter().append("circle")
-        .attr("id", function(d) { return d.id; })
- 	.attr("cx", function(d) { return path.centroid(d)[0]; })
- 	.attr("cy", function(d) { return path.centroid(d)[1]; })
-	.attr("r",10)
+ function plotBasemap() {
 
+	// Files to load    
+	    queue()
+	    .defer(d3.json, "database/geom/world.topojson")
+	    .await(ready);
+
+	function ready(error,world) {
+	  if (error) throw error;
+
+	svg.append("g")
+		.attr("id","countries")
+		.attr("class", "land")
+		.selectAll(".subunit")
+		.data(topojson.feature(world, world.objects.w).features)
+		.enter().append("path")
+		.attr("d", path)
+		.attr("clip-path", "url(#clip)")  
+
+	svg.append("g")
+	      .attr("id","coasts")
+	      .append("path")
+	      .datum(topojson.merge(world, world.objects.w.geometries))
+	      .attr("class", "coasts")
+	      .attr("d", path)
+	      .attr("clip-path", "url(#clip)")  
+	} 
+}
+
+plotBasemap()
+
+// TEXTES ET LOGOS **************************************
 
     // Source
-   svg.append("g").append("text").text("Source: Nicolas Lambert, 2016")
+svg.append("g").append("text").text("Source: Nicolas Lambert, 2016")
         .attr("x", 0+5).attr("y", height-5)
         .style({"font-size":"12px", "fill":"#919091","font-family":"tahoma, geneva, sans-serif","font-style":"italic"});
-
  
     // Logo
 svg.append("g").append("svg:image")
@@ -334,12 +334,52 @@ svg.append("g").append("svg:image")
 	.attr("text-anchor","middle");
 
 
+// CIRCLES PROPORTIONNELS
+
+function plotCircles(file,k,field) {
+
+	// Files to load    
+	    queue()
+	    .defer(d3.json, "database/geom/world.topojson")
+	    .defer(d3.tsv, file)
+	     .await(ready);
 
 
-   
-} 
+	function ready(error,world, data) {
+	  if (error) throw error;
+	  
+	    	
 
+	   var radius = d3.scale.sqrt()
+	   var stockById = {};
+	   var ratioById = {};
+	   var nameById = {};
+	   var myfieldstock = "d."+field;
 
+	   data.forEach(function(d) {
+
+	    stockById[d.id] = eval(myfieldstock) ;
+	    //stockById[d.id] = function(){return "d."+field} ;
+	    ratioById[d.id] = +d.ratio;
+	    nameById[d.id] = +d.country;
+	  });
+
+	// Cercles proportionnels
+	  svg.append("g")
+		.attr("id", "propsymbols")
+		.attr("class",palette + " bubble")
+		.selectAll("circle")
+		.data(topojson.feature(world, world.objects.c).features)
+		.enter().append("circle")
+		.attr("id", function(d) { return d.id; })
+	 	.attr("cx", function(d) { return path.centroid(d)[0]; })
+	 	.attr("cy", function(d) { return path.centroid(d)[1]; })
+	  	.attr("r", function(d) { return radius(stockById[d.id]*k); })
+
+	} 
+}
+
+plotCircles("database/test/datatest1.tsv",1,"stock")
 </script>
 
 
