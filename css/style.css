@@ -67,6 +67,10 @@ a {
 	float:right;
 }
 
+.item-header a{
+color:white;
+}
+
 .item-logo {
 	padding:0px;
 	margin:0 0 0 0;
