@@ -18,11 +18,52 @@
 <div id="header"></div>
 <div id="menu"></div>
 <div id="map"></div>
+<div id="dialog"></div>
 </body>    
 </html>
 
 
 <script>
+
+// ***************************************************************************   
+// GLOBAL PARAMETERS OF THE MAP **********************************************
+// *************************************************************************** 
+
+var width = 1000, height = 600;
+    
+var radius = d3.scale.sqrt()
+
+var svg = d3.select("#map").append("svg").attr("width", width).attr("height", height)
+
+ var radialGradient = svg.append("defs").append("radialGradient").attr("id", "radial-gradient");
+ radialGradient.append("stop").attr("offset", "50%").attr("stop-color", "#f3f6fa");
+ radialGradient.append("stop").attr("offset", "100%").attr("stop-color", "#d3e0fa");  
+
+var projection = d3.geo.armadillo()
+    .scale(237)
+    .translate([500,400])
+    .parallel(20)
+    .rotate([0, 0, 0])
+    .precision(.1);
+
+var path = d3.geo.path().projection(projection);
+
+// FILES TO LOAD 
+
+symbols = d3.map()
+labels = d3.map()	   
+queue()
+	.defer(d3.json, "database/geom/world.topojson")
+	.await(ready);
+        function ready(error,world) {
+	if (error) throw error;
+     	svg.data(topojson.feature(world,world.objects.c).features)
+		.enter()
+		.append("div")
+		.attr("id",function(d){
+			symbols.set(d.id, path.centroid(d));
+			labels.set(d.id, d.properties.name);
+			 })
 
 // ***************************************************************************   
 // HEADER ********************************************************************
@@ -45,14 +86,19 @@ header.append("p")
 	.attr("class","item-logo")
 	.html("<img src='img/geomedia_logo.png'></img>");
 
-
-
 // ***************************************************************************   
 // MENU **********************************************************************
 // *************************************************************************** 
 
-var menu =  d3.select("#menu");
+var menu =  d3.select("#menu")
 
+
+// Default values
+myrss="en_AUS_austra_int";
+mycountry="";
+myweek = 10;
+mymodel="grav";
+myfile = myrss+"_"+mycountry+"_"+myweek+"_"+mymodel 
 
 // Newspapers
 
@@ -66,16 +112,47 @@ $.getJSON('database/output/feeds.json', null, function(data) {
   fillSelect(data);
 });
 
-$( "#select-rss" ).selectmenu();
+
 function fillSelect(data) {
     $.each(data, function(i, item) {
-    $( "#select-rss" ).append("<option value = "+item.id+">"+item.name+"</option>");
+    $( "#select-rss" ).append("<option selected value = "+item.id+" selected>"+item.name+"</option>");
   });
 }
+$( "#select-rss" ).selectmenu();
+
+
+
 menu.append("div").attr("id","spacerss").append("br")
 menu.append("div").attr("id","allrss")
 d3.select("#allrss").html("<input type='checkbox' id='checkrss' name='checkrss'><label for='checkrss'>Select all</label>")
 $( "#allrss" ).buttonset();
+
+$("#checkrss").change(function() {
+    if(this.checked) {
+	$("#menu-rss").hide();
+	$("#spacerss").hide();
+	$("#rss-title").empty();
+	$("#rss-title").append("Newspapers (All)");
+    myrss_tmp = myrss;  
+    myrss = "0";
+	}
+    else {
+	$("#menu-rss").show();
+	$("#spacerss").show();
+	$("#rss-title").empty();
+	$("#rss-title").append("Newspapers");
+    myrss = myrss_tmp ;
+	}
+    submit();
+    
+});
+
+$("#select-rss").selectmenu({ change: function(event, ui) { 
+    myrss = ui.item.value; 
+    submit();
+    
+}});
+
 
 // Countries
 
@@ -92,6 +169,25 @@ $.getJSON('database/output/countries.json', null, function(data) {
   fillSelect2(data);
 });
 
+$("#checkcountries").change(function() {
+    if(this.checked) {
+	$("#menu-countries").hide();
+	$("#spacecountries").hide();
+	$("#countries-title").empty();
+	$("#countries-title").append("Countries (All)");
+    mycountry_tmp = mycountry;  
+    mycountry = "0";
+	}
+    else {
+	$("#menu-countries").show();
+	$("#spacecountries").show();
+	$("#countries-title").empty();
+	$("#countries-title").append("Countries");
+    mycountry = mycountry_tmp ;
+	}
+    submit();
+});
+
 $( "#select-countries" ).selectmenu();
 function fillSelect2(data) {
     $.each(data, function(i, item) {
@@ -99,10 +195,14 @@ function fillSelect2(data) {
   });
 }
 
+$("#select-countries").selectmenu({ change: function(event, ui) { 
+    mycountry = ui.item.value; 
+    submit();
+}});
 
 
 // Weeks
-myweek=1;
+
 menu.append("div").attr("id","menu-date-title").append("h2").html("<li>Time (<span id='nbweek'>"+myweek+"</span>)</li>")
 menu.append("div").attr("id","menu-date")
 
@@ -112,11 +212,14 @@ menu.append("div").attr("id","menu-date")
       range: "max",
       min: 1,
       max: 52,
-      value: 1,
+      value: myweek,
       slide: function( event, ui ) {
         $( "#nbweek" ).html( ui.value );
 	myweek =  ui.value;
+          submit();
+    //myfile = myrss+"_"+mycountry+"_"+myweek+"_"+mymodel          
       }
+           
     });
   $( "#nbweek" ).val( $( "#menu-date" ).slider( "value" ) );
 
@@ -127,14 +230,50 @@ menu.append("div").attr("id","allweeks")
 d3.select("#allweeks").html("<input type='checkbox' id='checkweek' name='checkweek'><label for='checkweek'>Select all</label>")
 $( "#allweeks" ).buttonset();
 
+$("#checkweek").change(function() {
+    if(this.checked) {
+	$("#menu-date").hide();
+	$("#spaceweeks").hide();
+	$("#nbweek").empty();
+	$("#nbweek").append("All");
+    myweek_tmp = myweek;  
+    myweek = 0;
+    }
+    else {
+	$("#menu-date").show();
+	$("#spaceweeks").show();
+	$("#nbweek").empty();
+    myweek = myweek_tmp;
+    $("#nbweek").append(myweek);
+	}
+   submit();
+});
 
-// Modele
+// Model
+
 menu.append("h2").html("Model")
 menu.append("div").attr("id","radioset")
-d3.select("#radioset").html("<input type='radio' id='radio1' name='radio' checked='checked'><label for='radio1'>Gravitaire</label><input type='radio' id='radio2' name='radio'><label for='radio2'>Aléatoire</label><input type='radio' id='radio3' name='radio'><label for='radio3'>Model 3</label>")
+d3.select("#radioset").html("<input type='radio' id='radio1' name='radiomodel' value = 'grav' checked='checked'><label for='radio1'>Gravitaire</label><input type='radio' id='radio2' value = 'alea' name='radiomodel'><label for='radio2'>Aléatoire</label><input type='radio' id='radio3' value = 'mod3' name='radiomodel'><label for='radio3'>Model 3</label>")
 $( "#radioset" ).buttonset();
 
-// Map configuration80000 jeunes français, 10% d'une génération qui émigre" 
+$("#radioset").click(function(){
+    
+    mymodel = $("input[name='radiomodel']:checked").val();
+    console.log(mymodel)	
+    submit();
+});
+
+
+// Action when clic
+ 
+function submit() { 
+    myfile = myrss+"_"+mycountry+"_"+myweek+"_"+mymodel
+    //console.log(myfile); 
+    plotPropCircles("database/test/datatest1.tsv",0.3,"stock","red",myfile)
+       
+};
+
+// Map configuration
 menu.append("br")
 menu.append("br")
 menu.append("h2").html("Map configuration")
@@ -143,144 +282,66 @@ menu.append("h2").html("Map configuration")
 menu.append("li").html("base map rotation")
 menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value",0).attr("min",0).attr("max",360).attr("step",1)
 
-    // Sizes
+d3.select("#form_rotate").on("input", function() { 
+    projection.rotate([eval(this.value),0,0]);
+    svg.selectAll("path").attr("d", path);         
+    svg.data(topojson.feature(world,world.objects.c).features).enter().append("circle").attr("id",function(d){ symbols.set(d.id, path.centroid(d))})
+    svg.select("#propsymbols").selectAll("circle")
+    .attr("cx", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
+    .attr("cy", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
+}); 
+
+// Sizes
 menu.append("li").html("Symboles sizes")
 menu.append("input").attr("type", "range").attr("id","form_sizes").attr("value",1).attr("min",0.1).attr("max",2).attr("step",0.1)
 
+d3.select("#form_sizes").on("input", function() {
+    var k = this.value;
+    d3.select("#propsymbols").selectAll("circle")
+    .attr("r", function(d) { return radius(d[1]*k*size)} );
+    });             
 
-// Menu jquery interactivity
-
-$("#checkrss").change(function() {
-    if(this.checked) {
-	$("#menu-rss").hide();
-	$("#spacerss").hide();
-	$("#rss-title").empty();
-	$("#rss-title").append("Newspapers (All)");
-	}
-    else {
-	$("#menu-rss").show();
-	$("#spacerss").show();
-	$("#rss-title").empty();
-	$("#rss-title").append("Newspapers");
-	}
-});
-
-$("#checkcountries").change(function() {
-    if(this.checked) {
-	$("#menu-countries").hide();
-	$("#spacecountries").hide();
-	$("#countries-title").empty();
-	$("#countries-title").append("Countries (All)");
-	}
-    else {
-	$("#menu-countries").show();
-	$("#spacecountries").show();
-	$("#countries-title").empty();
-	$("#countries-title").append("Countries");
-	}
-});
-
-
-$("#checkweek").change(function() {
-    if(this.checked) {
-	$("#menu-date").hide();
-	$("#spaceweeks").hide();
-	$("#nbweek").empty();
-	$("#nbweek").append("All");
-	}
-    else {
-	$("#menu-date").show();
-	$("#spaceweeks").show();
-	$("#nbweek").empty();
-	$("#nbweek").append(myweek);	
-	}
-
-
-});
-
-
-
-
-// catch menu values for d3
 
 
 // ***************************************************************************   
-// MAP ***********************************************************************
+// BASEMAP FUNCTION **********************************************************
 // *************************************************************************** 
-
-
-// PARAMETRE GÉNÉRAUX **************************************
-
-var width = 1000,
-    height = 600;
-
+   
+function plotLayout() {
     
-var radius = d3.scale.sqrt()
+    var graticule = d3.geo.graticule();
+    var defs = svg.append("defs");
 
+    defs.append("clipPath")
+        .attr("id", "clip")
+        .append("use")
+        .attr("xlink:href", "#sphere");
 
-var svg = d3.select("#map").append("svg")
-      .attr("width", width)
-      .attr("height", height)
+    svg.append("defs").append("path")
+        .datum({type: "Sphere"})
+        .attr("id", "sphere")
+        .attr("d", path)
+        .style("fill", "url(#radial-gradient)")
+        .style("stroke","none") ;
 
- var radialGradient = svg.append("defs").append("radialGradient").attr("id", "radial-gradient");
- radialGradient.append("stop").attr("offset", "50%").attr("stop-color", "#f3f6fa");
- radialGradient.append("stop").attr("offset", "100%").attr("stop-color", "#d3e0fa");  
+    svg.append("use")
+        .attr("class", "stroke")
+        .attr("xlink:href", "#sphere");
 
-var projection = d3.geo.armadillo()
-    .scale(237)
-    .translate([500,400])
-    .parallel(20)
-    .rotate([0, 0, 0])
-    .precision(.1);
+    svg.append("g").attr("id","grat").append("path")
+        .datum(graticule)
+        .attr("class", "graticule")
+        .attr("clip-path", "url(#clip)")
+        .attr("d", path);
 
-var path = d3.geo.path()
-    .projection(projection);
-
-var graticule = d3.geo.graticule();
-
-var defs = svg.append("defs");
-
-defs.append("clipPath")
-    .attr("id", "clip")
-  .append("use")
-    .attr("xlink:href", "#sphere");
-
-svg.append("defs").append("path")
-    .datum({type: "Sphere"})
-    .attr("id", "sphere")
-    .attr("d", path)
-    .style("fill", "url(#radial-gradient)")
-    .style("stroke","none") ;
-
-svg.append("use")
-    .attr("class", "stroke")
-    .attr("xlink:href", "#sphere");
-
-svg.append("g").attr("id","grat").append("path")
-    .datum(graticule)
-    .attr("class", "graticule")
-    .attr("clip-path", "url(#clip)")
-    .attr("d", path);
-
-
-
-
-// BASE MAP **************************************
-
-// DEBUT ***
-	
-    // Files to load    
-
-        queue()
-	    .defer(d3.json, "database/geom/world.topojson")
-	    .await(ready);
-        function ready(error,world) {
-	    if (error) throw error;
-  
-   symbols = d3.map()	        
-   svg.data(topojson.feature(world,world.objects.c).features).enter().append("circle").attr("id",function(d){ symbols.set(d.id, path.centroid(d))})
-             
- function plotBasemap() {
+    //svg.append("g").attr("id","logo")
+    //    .append("svg:image")
+    //    .attr('x',770)
+    //    .attr('y',430)
+    //    .attr('width', 60)
+    //    .attr('height', 50)
+    //    .attr("xlink:href","img/logo_riate.svg");
+    
 	svg.append("g")
 		.attr("id","countries")
 		.attr("class", "land")
@@ -291,23 +352,28 @@ svg.append("g").attr("id","grat").append("path")
 		.attr("clip-path", "url(#clip)")  
 
 	svg.append("g")
-	      .attr("id","coasts")
-	      .append("path")
-	      .datum(topojson.merge(world, world.objects.w.geometries))
-	      .attr("class", "coasts")
-	      .attr("d", path)
-	      .attr("clip-path", "url(#clip)")  
-} 
-  
-    plotBasemap()  
+        .attr("id","coasts")
+	    .append("path")
+	    .datum(topojson.merge(world, world.objects.w.geometries))
+	    .attr("class", "coasts")
+	    .attr("d", path)
+	    .attr("clip-path", "url(#clip)")  
     
-    // CIRCLES PROPORTIONNELS
+}
 
-function plotPropCircles(file,k,field, pallette) {
 
-	   var stockById = d3.map()
-       stockById2 = [];
-	   var myfieldstock = "d."+field;
+// ***************************************************************************   
+// PROP SYMBOLS FUNCTION **********************************************************
+// ***************************************************************************    
+
+function plotPropCircles(file,k,field, pallette, maptitle) {
+	 
+	svg.select("#propsymbols").remove();
+	svg.select("#title").remove();
+	
+	var stockById = d3.map()
+       	stockById2 = [];
+	var myfieldstock = "d."+field;
 
 	// Files to load    
 	 queue()
@@ -333,81 +399,51 @@ function plotPropCircles(file,k,field, pallette) {
         .on('mouseout', function(d){
             d3.select(this).transition().duration(250).style("fill", function(d) {d.class});
         })
-        .on('click', function(d){
-            alert("TODO: Display WordCloud for "+d[0]);
-        });
-        
-
-        
+	.on('click', function(d){
+		myid = d3.select(this).attr("id");
+		mylabel = labels.get(myid);
+		$( "#dialog" ).dialog( "open" );
+		$( "#dialog" ).dialog('option', 'title', mylabel + " (" + myid + ")");
+		$( "#dialog" ).html("<p>Here display a word cloud for: " + myfile + "</p>");
+    });
+    
 } 
   size = eval(k);
 
+
+var posx = width/2; var posy = 50;
+svg.append("g").append("text").attr("id","title").text(maptitle)
+.attr("x", posx).attr("y", posy)
+.style({"font-size":"25px", "fill":"#6B8087","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
+.attr("text-anchor","middle");  
 }
 
-            
-plotPropCircles("database/test/datatest1.tsv",0.3,"stock")
-    
 
 
-// Action rotation
-d3.select("#form_rotate").on("input", function() { 
-    projection.rotate([eval(this.value),0,0]);
-    svg.selectAll("path").attr("d", path);
-   
-    svg.data(topojson.feature(world,world.objects.c).features).enter().append("circle").attr("id",function(d){ symbols.set(d.id, path.centroid(d))})
-    svg.select("#propsymbols").selectAll("circle")
-    .attr("cx", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
-    .attr("cy", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
-});
-
-    
-// Action size        
-d3.select("#form_sizes").on("input", function() {
-    var k = this.value;
-    d3.select("#propsymbols").selectAll("circle")
-        .attr("r", function(d) { return radius(d[1]*k*size)} );
-    });             
-        
-} // FIN
+// ***************************************************************************   
+// POPUP WORDCLOUD ***********************************************************
+// ***************************************************************************    
 
 
-
-
-// TEXTES ET LOGOS **************************************
-
-
-
-
-
-
-
-
-
-
-// ************************************
-
-
-    // Source
-svg.append("g").append("text").text("Source: Nicolas Lambert, 2016")
-        .attr("x", 0+5).attr("y", height-5)
-        .style({"font-size":"12px", "fill":"#919091","font-family":"tahoma, geneva, sans-serif","font-style":"italic"});
+  $(function() {
+    $( "#dialog" ).dialog({
+      autoOpen: false,
+      show: {
+        effect: "blind",
+        duration: 1
+      },
+      hide: {
+        effect: "explode",
+        duration: 1
+      }
+    });
  
-    // Logo
-svg.append("g").append("svg:image")
-        .attr('x',773)
-        .attr('y',500)
-        .attr('width', 120)
-        .attr('height', 100)
-        .attr("xlink:href","img/logo_riate.svg");
+  });
 
 
-   // map title
- var maptitle ="Title";
-    var posx = width/2; var posy = 50;
-    svg.append("g").append("text").text(maptitle)
-        .attr("x", posx).attr("y", posy)
-        .style({"font-size":"25px", "fill":"#6B8087","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
-	.attr("text-anchor","middle");
-
+// DISPLAY BASEMAP            
+plotLayout() 
+     
+} 
 
 </script>
