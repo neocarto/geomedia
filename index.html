@@ -29,16 +29,22 @@
 // ***************************************************************************   
 // GLOBAL PARAMETERS OF THE MAP **********************************************
 // *************************************************************************** 
-
+var formsize = 1;
 var width = 1000, height = 600;
     
 var radius = d3.scale.sqrt()
 
 var svg = d3.select("#map").append("svg").attr("width", width).attr("height", height)
 
- var radialGradient = svg.append("defs").append("radialGradient").attr("id", "radial-gradient");
- radialGradient.append("stop").attr("offset", "50%").attr("stop-color", "#f3f6fa");
- radialGradient.append("stop").attr("offset", "100%").attr("stop-color", "#d3e0fa");  
+var radialGradient = svg.append("defs").append("radialGradient").attr("id", "radial-gradient");
+radialGradient.append("stop").attr("offset", "50%").attr("stop-color", "#f3f6fa");
+radialGradient.append("stop").attr("offset", "100%").attr("stop-color", "#d3e0fa"); 
+
+var radialGradient2 = svg.append("defs").append("radialGradient");
+radialGradient2.attr("id", "radial-gradient2");
+radialGradient2.append("stop").attr("offset", "20%").attr("stop-color", "#ef5a5a");
+radialGradient2.append("stop").attr("offset", "100%").attr("stop-color", "#d10303");      
+ 
 
 var projection = d3.geo.armadillo()
     .scale(237)
@@ -122,8 +128,9 @@ $.getJSON('database/output/feeds.json', null, function(data) {
 
 menu.append("div").attr("id","spacerss").append("br")
 menu.append("div").attr("id","allrss")
-d3.select("#allrss").html("<input type='checkbox' id='checkrss' name='checkrss'><label for='checkrss'>Select all</label>")
+d3.select("#allrss").html("<input type='checkbox' id='checkrss' name='checkrss'><label for='checkrss' id ='labelcheckrss'>Select All</label>")
 $( "#allrss" ).buttonset();
+
 
 $("#checkrss").change(function() {
     if(this.checked) {
@@ -131,6 +138,9 @@ $("#checkrss").change(function() {
 	$("#spacerss").hide();
 	$("#rss-title").empty();
 	$("#rss-title").append("Newspapers (All)");
+	$( "#allrss" ).buttonset( "destroy" );
+	$("#labelcheckrss").html("Choose one");
+	$( "#allrss" ).buttonset();
     myrss_tmp = myrss;  
     myrss = "0";
 	}
@@ -139,6 +149,9 @@ $("#checkrss").change(function() {
 	$("#spacerss").show();
 	$("#rss-title").empty();
 	$("#rss-title").append("Newspapers");
+	$( "#allrss" ).buttonset( "destroy" );
+	$("#labelcheckrss").html("Select All");
+	$( "#allrss" ).buttonset();
     myrss = myrss_tmp ;
 	}
     submit();
@@ -161,7 +174,7 @@ menu.append("div").attr("id","menu-countries").append("select")
 
 menu.append("div").attr("id","spacecountries").append("br")
 menu.append("div").attr("id","allcountries")
-d3.select("#allcountries").html("<input type='checkbox' id='checkcountries' name='checkcountries'><label for='checkcountries'>Select all</label>")
+d3.select("#allcountries").html("<input type='checkbox' id='checkcountries' name='checkcountries'><label for='checkcountries' id='labelcheckcountries'>Select all</label>")
 $( "#allcountries" ).buttonset();
 
 $.getJSON('database/output/countries.json', null, function(data) {
@@ -174,6 +187,9 @@ $("#checkcountries").change(function() {
 	$("#spacecountries").hide();
 	$("#countries-title").empty();
 	$("#countries-title").append("Countries (All)");
+	$( "#allcountries" ).buttonset( "destroy" );
+	$("#labelcheckcountries").html("Choose one");
+	$( "#allcountries" ).buttonset();
     mycountry_tmp = mycountry;  
     mycountry = "0";
 	}
@@ -182,6 +198,9 @@ $("#checkcountries").change(function() {
 	$("#spacecountries").show();
 	$("#countries-title").empty();
 	$("#countries-title").append("Countries");
+	$( "#allcountries" ).buttonset( "destroy" );
+	$("#labelcheckcountries").html("Select All");
+	$( "#allcountries" ).buttonset();
     mycountry = mycountry_tmp ;
 	}
     submit();
@@ -200,8 +219,11 @@ $("#select-countries").selectmenu({ change: function(event, ui) {
 }});
 
 // Defalul values for countries & Newspapers
-d3.selectAll(".ui-selectmenu-text").text(myrsslabel)
-d3.select(".ui-selectmenu-text").text(mycountrylabel)
+d3.select("#menu-countries .ui-selectmenu-text").text(mycountrylabel)
+d3.select("#menu-rss .ui-selectmenu-text").text(myrsslabel)
+
+
+
 
 // Weeks
 
@@ -214,6 +236,7 @@ menu.append("div").attr("id","menu-date")
       range: "max",
       min: 1,
       max: 52,
+      step:1,	
       value: myweek,
       slide: function( event, ui ) {
         $( "#nbweek" ).html( ui.value );
@@ -226,9 +249,10 @@ menu.append("div").attr("id","menu-date")
 
   });
 menu.append("div").attr("id","spaceweeks").append("br")
+week = 10;
 
 menu.append("div").attr("id","allweeks")
-d3.select("#allweeks").html("<input type='checkbox' id='checkweek' name='checkweek'><label for='checkweek'>Select all</label>")
+d3.select("#allweeks").html("<input type='checkbox' id='checkweek' name='checkweek'><label for='checkweek' id ='labelcheckweek'>Select all</label>")
 $( "#allweeks" ).buttonset();
 
 $("#checkweek").change(function() {
@@ -237,14 +261,21 @@ $("#checkweek").change(function() {
 	$("#spaceweeks").hide();
 	$("#nbweek").empty();
 	$("#nbweek").append("All");
+	$( "#allweeks" ).buttonset( "destroy" );
+	$("#labelcheckweek").html("Choose one");
+	$( "#allweeks" ).buttonset();
     myweek_tmp = myweek;  
     myweek = 0;
     }
     else {
 	$("#menu-date").show();
 	$("#spaceweeks").show();
-    myweek = myweek_tmp;
-    $("#nbweek").append(myweek);
+   	myweek = myweek_tmp;
+    	$("#nbweek").empty();
+	$("#nbweek").append(myweek);
+	$( "#allweeks" ).buttonset( "destroy" );
+	$("#labelcheckweek").html("Select All");
+	$( "#allweeks" ).buttonset();
 	}
    submit();
 });
@@ -268,8 +299,13 @@ $("#radioset").change(function(){
 function submit() { 
     myfile = myrss+"_"+mycountry+"_"+myweek+"_"+mymodel
     console.log(myfile); 
-    plotPropCircles("database/test/datatest1.tsv",0.3,"stock","red",myfile)
-       
+    //plotPropCircles("database/test/datatest1.tsv",0.3,"stock","red",myfile)
+    
+if (myrss == 0 & mycountry == 0 & myweek == 0){
+	plotPropCircles("database/test/datatest1.tsv",0.3,"stock","red",myfile)
+	} else {
+	plotPropChoroCircles("database/test/datatest1.tsv","stock2","ratio2",0.2, 8,"Reds",myfile)	
+	}
 };
 
 // Map configuration
@@ -295,7 +331,8 @@ menu.append("li").html("Symboles sizes")
 menu.append("input").attr("type", "range").attr("id","form_sizes").attr("value",1).attr("min",0.1).attr("max",2).attr("step",0.1)
 
 d3.select("#form_sizes").on("input", function() {
-   k = this.value;
+    k = this.value;
+    formsize = eval(k);	
     d3.select("#propsymbols").selectAll("circle")
     .attr("r", function(d) { return radius(d[1]*k*size)} );
     });             
@@ -358,7 +395,7 @@ function plotLayout() {
 // ***************************************************************************    
 
 function plotPropCircles(file,k,field, pallette, maptitle) {
-	 
+	
 	svg.select("#propsymbols").remove();
 	svg.select("#title").remove();
 	
@@ -376,14 +413,14 @@ function plotPropCircles(file,k,field, pallette, maptitle) {
 	stockById2 = stockById2.sort(function(a,b){return a[1] < b[1]})
 	  svg.append("g")
 		.attr("id", "propsymbols")
-		.attr("class"," bubble")
+		.attr("class","circles")
 		.selectAll("circle")
 		.data(stockById2)
 		.enter().append("circle")
 		.attr("id", function(d) { return d[0]; })
 	 	.attr("cx", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
 		.attr("cy", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
-        .attr("r", function(d) { return radius(d[1]*k); })
+        .attr("r", function(d) { return radius(d[1]*k*formsize); })
         .on('mouseover', function(d){
             d3.select(this).style({fill: "#ffc914", cursor:"pointer"});
         })
@@ -411,6 +448,84 @@ svg.append("g").append("text").attr("id","title").text(maptitle)
 .attr("text-anchor","middle");  
 }
 
+
+// ***************************************************************************   
+// PROP SYMBOLS CHORO FUNCTION ***********************************************
+// ***************************************************************************    
+
+function plotPropChoroCircles(file,stock,ratio,k, nbreaks,palette,maptitle) {
+	 
+	svg.select("#propsymbols").remove();
+	svg.select("#title").remove();
+	
+	var stockById = d3.map()
+	var rateById = d3.map()
+       	stockById2 = [];
+	var myfieldstock = "d."+stock;
+	var myfieldratio = "d."+ratio;
+
+	// Files to load    
+	 queue()
+  	 .defer(d3.tsv, file, function(d) { stockById2.push([d.id, +eval(myfieldstock)]) ; rateById.set(d.id, +eval(myfieldratio))  })
+     .await(ready);
+	function ready(error, data) {
+
+	  if (error) throw error;
+
+
+
+	// ***** Discretization *****
+
+    var serie = new geostats(rateById.values());
+    breaks = (serie.getQuantile(nbreaks));
+    b = (serie.getQuantile(nbreaks));
+    b.splice(nbreaks,1);
+    b.splice(0,1); 
+
+   
+    var quantize = d3.scale.threshold()
+    .domain(b)
+    .range(d3.range(nbreaks).map(function(i) { return "q" + i + "-" + nbreaks; }));
+
+
+	stockById2 = stockById2.sort(function(a,b){return a[1] < b[1]})
+	  svg.append("g")
+		.attr("id", "propsymbols")
+ 		.attr("class",palette + " bubble")
+		.selectAll("circle")
+		.data(stockById2)
+		.enter().append("circle")
+		.attr("class", function(d) { return quantize(rateById.get(d[0]));   })
+		.attr("id", function(d) { return d[0]; })
+	 	.attr("cx", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
+		.attr("cy", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
+        .attr("r", function(d) { return radius(d[1]*k*formsize); })
+        .on('mouseover', function(d){
+            d3.select(this).style({fill: "#ffc914", cursor:"pointer"});
+        })
+        .on('mouseout', function(d){
+            d3.select(this).transition().duration(250).style("fill", function(d) {d.class});
+        })
+	.on('click', function(d){
+		myid = d3.select(this).attr("id");
+		mylabel = labels.get(myid);
+		$( "#dialog" ).dialog( "open" );
+		$( "#dialog" ).dialog('option', 'title', mylabel + " (" + myid + ")");
+		$( "#dialog" ).html("<p>Here display a word cloud for: " + myfile + "</p>");
+		plotWordCloud("database/output/tagexample.tsv")
+
+    });
+    
+} 
+  size = eval(k);
+
+
+var posx = width/2; var posy = 50;
+svg.append("g").append("text").attr("id","title").text(maptitle)
+.attr("x", posx).attr("y", posy)
+.style({"font-size":"25px", "fill":"#6B8087","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
+.attr("text-anchor","middle");  
+}
 
 
 // ***************************************************************************   
@@ -488,7 +603,8 @@ function plotWordCloud(file) {
 // DISPLAY BASEMAP            
 plotLayout()
 // DISPLAY FIRST CIRCLES LAYER
-plotPropCircles("database/test/datatest1.tsv",0.3,"stock","red",myfile)     
+//plotPropCircles("database/test/datatest1.tsv",0.2,"stock","red",myfile)   
+plotPropChoroCircles("database/test/datatest1.tsv","stock2","ratio2",0.2, 8,"Reds",myfile)     
 } 
 
 </script>

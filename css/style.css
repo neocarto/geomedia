@@ -137,5 +137,9 @@ font-family: 'Enriqueta', arial, serif;
   stroke-width: 1px;
 }
 
+ .circles {
+	fill : url(#radial-gradient2);
+	stroke-width: 1.3px;
+	stroke : #ffffff ; }
 
 
