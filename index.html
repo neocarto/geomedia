@@ -397,6 +397,8 @@ function plotLayout() {
 function plotPropCircles(file,k,field, pallette, maptitle) {
 	
 	svg.select("#propsymbols").remove();
+	svg.select("#legend").remove();
+	svg.select("#legtitle").remove();
 	svg.select("#title").remove();
 	
 	var stockById = d3.map()
@@ -438,7 +440,7 @@ function plotPropCircles(file,k,field, pallette, maptitle) {
     });
     
 } 
-  size = eval(k);
+  //size = eval(k);
 
 
 var posx = width/2; var posy = 50;
@@ -446,6 +448,7 @@ svg.append("g").append("text").attr("id","title").text(maptitle)
 .attr("x", posx).attr("y", posy)
 .style({"font-size":"25px", "fill":"#6B8087","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
 .attr("text-anchor","middle");  
+
 }
 
 
@@ -456,6 +459,8 @@ svg.append("g").append("text").attr("id","title").text(maptitle)
 function plotPropChoroCircles(file,stock,ratio,k, nbreaks,palette,maptitle) {
 	 
 	svg.select("#propsymbols").remove();
+	svg.select("#legend").remove();
+	svg.select("#legtitle").remove();
 	svg.select("#title").remove();
 	
 	var stockById = d3.map()
@@ -515,9 +520,49 @@ function plotPropChoroCircles(file,stock,ratio,k, nbreaks,palette,maptitle) {
 		plotWordCloud("database/output/tagexample.tsv")
 
     });
+
+
+// ***** Legend *****  
+    
+    var legtitle = "Title of the legend";
+    var xpos = 20;
+    var ypos = 300;
+    var boxwidth = 25;
+    var boxheight = 20;
+    var boxgap = 20;
+    
+    var legend = d3.select("svg").append("g").attr("id","legend");
+    legend.append("g").attr("id","boxes").attr("class",palette)
+    .selectAll('legendEntry')
+    .data(quantize.range().reverse())
+    .enter()
+    .append('rect')
+    .attr("x", xpos)
+    .attr("y", function(d, i) {
+       return i * boxgap + ypos + boxgap*2;
+    })
+   .attr("width", boxwidth)
+   .attr("height", boxheight)
+   .attr("class", function(d){return d;});
+    
+    legend.append("g").attr("id","boxestextes")
+    .selectAll('legendEntry')
+    .data(breaks.reverse())
+    .enter()
+    .append('text')
+    .attr("x", xpos + boxwidth + boxgap/2)
+    .attr("y", function(d, i) {
+       return i * boxgap + ypos + boxgap*2;
+    })
+    .text(function(d, i) {
+       return breaks[i].toFixed(0);
+    })
+    .style({'alignment-baseline': 'middle' , 'font-size':'10'});
+        
+    legend.append("g").attr("id","legendtitle").append('text').text(maptitle).attr("x", xpos).attr("y", ypos+boxgap);   
     
 } 
-  size = eval(k);
+  //size = eval(k);
 
 
 var posx = width/2; var posy = 50;
@@ -525,6 +570,8 @@ svg.append("g").append("text").attr("id","title").text(maptitle)
 .attr("x", posx).attr("y", posy)
 .style({"font-size":"25px", "fill":"#6B8087","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
 .attr("text-anchor","middle");  
+
+
 }
 
 
