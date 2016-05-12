@@ -6,6 +6,7 @@
 <script src="js/d3.layout.cloud.js"></script>
 <script src="js/d3.geo.projection.v0.min.js"></script>
 <script src="js/geostats.min.js"></script>
+<script src="js/tooltip.js"></script>
 <link href="css/style.css" rel="stylesheet" type="text/css" >
 <link href="css/jquery-ui.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="css/colorbrewer.css">   
@@ -423,6 +424,12 @@ function plotPropCircles(file,k,field, pallette, maptitle) {
 	 	.attr("cx", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
 		.attr("cy", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
         .attr("r", function(d) { return radius(d[1]*k*formsize); })
+    	.call(d3.helper.tooltip()
+                .style({color: 'white', border:'2', background: '#7A776E', padding:'5px' })
+                .text(function(d){
+			return labels.get(d[0])+"<br/>"+d[1]; 
+		})
+            )
         .on('mouseover', function(d){
             d3.select(this).style({fill: "#ffc914", cursor:"pointer"});
         })
@@ -505,6 +512,12 @@ function plotPropChoroCircles(file,stock,ratio,k, nbreaks,palette,maptitle) {
 	 	.attr("cx", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
 		.attr("cy", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
         .attr("r", function(d) { return radius(d[1]*k*formsize); })
+    	.call(d3.helper.tooltip()
+                .style({color: 'white', border:'2', background: '#7A776E', padding:'5px' })
+                .text(function(d){
+			return labels.get(d[0])+"<br/>stock: "+d[1]+"<br/>ratio: "+rateById.get(d[0]); 
+		})
+            )
         .on('mouseover', function(d){
             d3.select(this).style({fill: "#ffc914", cursor:"pointer"});
         })
