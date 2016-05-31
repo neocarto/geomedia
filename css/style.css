@@ -130,16 +130,14 @@ font-family: 'Enriqueta', arial, serif;
   stroke-width: .5px;
 }
 
-
-.bubble { 
-  stroke : #fff ;
-  fill : red;
-  stroke-width: 1px;
-}
-
- .circles {
+.event {
 	fill : url(#radial-gradient2);
 	stroke-width: 1.3px;
 	stroke : #ffffff ; }
 
+.notevent {
+  fill: #CCCCCC;
+  fill-opacity: 0.4;
+  stroke: none;
+}
 
