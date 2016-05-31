@@ -1,0 +1,27 @@
+Nicolas Lambert, 2016
+
+ogr2ogr -t_srs EPSG:4326 w.shp NED_10m_eckertIV_v3.shp
+ogr2ogr -t_srs EPSG:4326 c.shp NED_10m_eckertIV_centres_v3.shp
+ogr2ogr -f GeoJSON w.json w.shp
+ogr2ogr -f GeoJSON c.json c.shp
+topojson -o world.topojson --id-property ISO3 --properties name=name -- w.json c.json
+rm w.*
+rm c.*
+
+
+// POLYGONES
+ogr2ogr -t_srs EPSG:4326 w.shp NED_10m_eckertIV_v3.shp
+ogr2ogr -t_srs EPSG:4326 c.shp NED_10m_eckertIV_centres_v3.shp
+ogr2ogr -f GeoJSON w.json w.shp
+ogr2ogr -f GeoJSON c.json c.shp
+topojson -o world.topojson --id-property ISO3 --properties name=name -- w.json
+rm w.*
+
+// CENTROIDES
+ogr2ogr -t_srs EPSG:4326 c.shp NED_10m_eckertIV_centres_v3.shp
+ogr2ogr -t_srs EPSG:4326 c.shp NED_10m_eckertIV_centres_v3.shp
+ogr2ogr -f GeoJSON w.json w.shp
+ogr2ogr -f GeoJSON c.json c.shp
+topojson -o world.topojson --id-property ISO3 --properties name=name -- w.json
+rm c.*
+
