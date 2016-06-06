@@ -136,8 +136,10 @@ font-family: 'Enriqueta', arial, serif;
 	stroke : #ffffff ; }
 
 .notevent {
-  fill: #CCCCCC;
-  fill-opacity: 0.4;
+  fill: #333333;
+  fill-opacity: 0.8;
   stroke: none;
+
+
 }
 

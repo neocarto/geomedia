@@ -119,7 +119,7 @@ menu.append("div").attr("id","menu-rss").append("select")
 	.attr("style","width:250px ; height:100px");
 
 
-$.getJSON('database/output/feeds.json', null, function(data) {
+$.getJSON('files/json/feeds.json', null, function(data) {
     $.each(data, function(i, item) {
     $( "#select-rss" ).append("<option selected value = "+item.id+" selected>"+item.name+"</option>");
    });
@@ -246,12 +246,9 @@ function submit() {
     console.log(fileevt);
     console.log(fieldweek);
 
- plotPropChoroCircles(fileobs, fileevt, fieldweek, 10, fieldweek)
-    //console.log(myfile); 
-    
-    //plotPropCircles("database/test/datatest1.tsv",0.3,"stock","red",myfile)
-    
-	//plotPropChoroCircles("database/test/datatest1.tsv","stock2","ratio2",0.2, 8,"Reds","coucou")	
+ plotPropChoroObs(fileobs, fieldweek, 10)
+ plotPropChoroEvt(fileobs, fileevt, fieldweek, 10, fieldweek)
+
 };
 
 // Map configuration
@@ -267,9 +264,17 @@ d3.select("#form_rotate").on("input", function() {
     projection.rotate([eval(this.value),0,0]);
     svg.selectAll("path").attr("d", path);         
     svg.data(topojson.feature(world,world.objects.c).features).enter().append("circle").attr("id",function(d){ symbols.set(d.id, path.centroid(d))})
-    svg.select("#propsymbols").selectAll("circle")
+    svg.select("#propsymbolsEvt").selectAll("circle")
     .attr("cx", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
     .attr("cy", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
+    svg.select("#propsymbolsObs").selectAll("circle")
+    .attr("cx", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
+    .attr("cy", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
+    svg.select("#labels").selectAll("text")
+    .attr("x", function(d) {  return symbols.get(d[0])[0] })
+    .attr("y", function(d) { return symbols.get(d[0])[1]  - radius(d[1]*k*formsize) - 5 })    
+    
+    
 }); 
 
 // Sizes
@@ -279,9 +284,11 @@ menu.append("input").attr("type", "range").attr("id","form_sizes").attr("value",
 d3.select("#form_sizes").on("input", function() {
     k = this.value;
     formsize = eval(k);	
-    d3.select("#propsymbols").selectAll("circle")
+    d3.select("#propsymbolsEvt").selectAll("circle")
     .attr("r", function(d) { return radius(d[1]*k*size)} );
-    });             
+    d3.select("#propsymbolsObs").selectAll("circle")
+    .attr("r", function(d) { return radius(d[1]*k*size)} );
+});             
 
 
 
@@ -339,10 +346,12 @@ function plotLayout() {
 // PROP SYMBOLS CHORO FUNCTION ***********************************************
 // ***************************************************************************    
 
-function plotPropChoroCircles(filestock, fileratio, fieldweek, k, maptitle) {
+function plotPropChoroEvt(filestock, fileratio, fieldweek, k, maptitle) {
 	 
-	svg.select("#propsymbols").remove();
-	svg.select("#legend").remove();
+	svg.select("#propsymbolsObs").remove();
+    svg.select("#propsymbolsEvt").remove();
+    svg.select("#labels").remove();
+    svg.select("#legend").remove();
 	svg.select("#legtitle").remove();
 	svg.select("#title").remove();
 	//console.log(filestock)
@@ -386,11 +395,14 @@ function plotPropChoroCircles(filestock, fileratio, fieldweek, k, maptitle) {
 
 	stockById2 = stockById2.sort(function(a,b){return a[1] < b[1]})
 	  svg.append("g")
-		.attr("id", "propsymbols")
+		.attr("id", "propsymbolsEvt")
 		.selectAll("circle")
 		.data(stockById2)
-		.enter().append("circle")
-         .attr("class", function(d) { return colorById.get(d[0]); })
+		.enter()
+        .append("circle")
+        //.filter(function(d) { rateById.get(d[0]) > 2 })
+        .filter(function(d) { return colorById.get(d[0]) == "event" })
+        .attr("class", function(d) { return colorById.get(d[0]); })
 		//.attr("class", function(d) { return quantize(rateById.get(d[0]));   })
 		.attr("id", function(d) { return d[0]; })
 	 	.attr("cx", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
@@ -421,8 +433,6 @@ function plotPropChoroCircles(filestock, fileratio, fieldweek, k, maptitle) {
     //fileobs = "files/"+myrss+"/observ.tsv";
     //fileevt = "files/"+myrss+"/evt"+mymodel+".tsv";
     //fieldweek = "week"+sep+myweek;
-        
-            
             mycloudfile =  "files/"+myrss+"/"+d[0]+"_"+year+"-"+sep+myweek+"_"+mymodel+".tsv";
             console.log(mycloudfile)
             plotWordCloud(mycloudfile)
@@ -471,15 +481,90 @@ function plotPropChoroCircles(filestock, fileratio, fieldweek, k, maptitle) {
 //    legend.append("g").attr("id","legendtitle").append('text').text(maptitle).attr("x", xpos).attr("y", ypos+boxgap);   
 //    
 
+// Labels        
+labelsLayer = svg.append("g").attr("id", "labels")
+		
+labelsLayer.selectAll("circle")
+		.data(stockById2)
+		.enter()
+        .append("text")
+        .filter(function(d) { return colorById.get(d[0]) == "event" })
+	 	.attr("x", function(d) { return symbols.get(d[0])[0] })
+	 	.attr("y", function(d) { return symbols.get(d[0])[1] - radius(d[1]*k*formsize) - 5 })
+        .attr("text-anchor", "middle")
+       // .text(function(d) { return "coucou"}) 
+	 	.text(function(d) { return labels.get(d[0]).toUpperCase()})
+        .style({"font-size":"12px", "fill":"#710f0f" , "stroke" : "white" , "stroke-width": "3.5px", "opacity": "0.2"});
+        
+        
+labelsLayer.selectAll("circle")
+		.data(stockById2)
+		.enter()
+        .append("text")
+        .filter(function(d) { return colorById.get(d[0]) == "event" })
+	 	.attr("x", function(d) { return symbols.get(d[0])[0] })
+	 	.attr("y", function(d) { return symbols.get(d[0])[1] - radius(d[1]*k*formsize) - 5 })
+        .attr("text-anchor", "middle")
+       // .text(function(d) { return "coucou"}) 
+	 	.text(function(d) { return labels.get(d[0]).toUpperCase()})
+        .style({"font-size":"12px", "fill":"#d00202" }) ;
+
+    
+      
+        
+
 } 
   size = eval(k);
 
 
 var posx = width/2; var posy = 50;
 svg.append("g").append("text").attr("id","title").text(maptitle)
-.attr("x", posx).attr("y", posy)
+
 .style({"font-size":"25px", "fill":"#6B8087","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
 .attr("text-anchor","middle");  
+
+
+}
+            
+            
+            
+
+function plotPropChoroObs(filestock, fieldweek, k) {
+	 
+	svg.select("#propsymbolsObs").remove();
+    svg.select("#propsymbolsEvt").remove();
+    svg.select("#labels").remove();
+	svg.select("#legend").remove();
+	svg.select("#legtitle").remove();
+	svg.select("#title").remove();
+	var stockById = d3.map()
+       	stockById2 = [];
+	var myfieldstock = "d."+fieldweek;
+    // Files to load    
+	 queue()
+
+     
+     .defer(d3.tsv, filestock, function(d) { stockById2.push([d.id, +eval(myfieldstock)]) })
+     .await(ready);
+	function ready(error, data) {
+
+	  if (error) throw error;
+
+
+	stockById2 = stockById2.sort(function(a,b){return a[1] < b[1]})
+	  svg.append("g")
+		.attr("id", "propsymbolsObs")
+		.selectAll("circle")
+		.data(stockById2)
+		.enter().append("circle")
+         .attr("class", "notevent")
+		//.attr("class", function(d) { return quantize(rateById.get(d[0]));   })
+		.attr("id", function(d) { return d[0]; })
+	 	.attr("cx", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
+		.attr("cy", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
+        .attr("r", function(d) { return radius(d[1]*k*formsize); })
+} 
+  size = eval(k);
 
 
 }
