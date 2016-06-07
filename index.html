@@ -51,7 +51,7 @@ var projection = d3.geo.armadillo()
     .scale(237)
     .translate([500,400])
     .parallel(20)
-    .rotate([0, 0, 0])
+    .rotate([187, 0, 0])
     .precision(.1);
 
 var path = d3.geo.path().projection(projection);
@@ -59,7 +59,8 @@ var path = d3.geo.path().projection(projection);
 // FILES TO LOAD 
 
 symbols = d3.map()
-labels = d3.map()	
+labels = d3.map()
+listeRSS = d3.map()
 
 queue()
 	.defer(d3.json, "files/geom/world.topojson")
@@ -103,7 +104,7 @@ var menu =  d3.select("#menu")
 
 
 // Default values
-year = 2014;
+year = 2015;
 myrss="en_AUS_austra_int";
 myrsslabel="the australian";
 mycountry="FRA";
@@ -125,7 +126,7 @@ $.getJSON('files/json/feeds.json', null, function(data) {
    });
 });
 
-
+ 
 
 menu.append("div").attr("id","spacerss").append("br")
 menu.append("div").attr("id","allrss")
@@ -242,12 +243,15 @@ function submit() {
     fileobs = "files/"+myrss+"/observ.tsv";
     fileevt = "files/"+myrss+"/evt"+mymodel+".tsv";
     fieldweek = "week"+sep+myweek;
-    console.log(fileobs);
-    console.log(fileevt);
-    console.log(fieldweek);
 
+
+center = (symbols.get((myrss.split("_"))[1]))[0]
+//projection.rotate([0,0,0]);
+console.log(center)    
+svg.selectAll("path").attr("d", path);
+ 
  plotPropChoroObs(fileobs, fieldweek, 10)
- plotPropChoroEvt(fileobs, fileevt, fieldweek, 10, fieldweek)
+ plotPropChoroEvt(fileobs, fileevt, fieldweek, 10)
 
 };
 
@@ -262,7 +266,10 @@ menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value"
 
 d3.select("#form_rotate").on("input", function() { 
     projection.rotate([eval(this.value),0,0]);
-    svg.selectAll("path").attr("d", path);         
+    svg.selectAll("path").attr("d", path);
+    //svg.selectAll("path").attr("class", "land");
+    
+    
     svg.data(topojson.feature(world,world.objects.c).features).enter().append("circle").attr("id",function(d){ symbols.set(d.id, path.centroid(d))})
     svg.select("#propsymbolsEvt").selectAll("circle")
     .attr("cx", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
@@ -270,9 +277,11 @@ d3.select("#form_rotate").on("input", function() {
     svg.select("#propsymbolsObs").selectAll("circle")
     .attr("cx", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
     .attr("cy", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
-    svg.select("#labels").selectAll("text")
-    .attr("x", function(d) {  return symbols.get(d[0])[0] })
-    .attr("y", function(d) { return symbols.get(d[0])[1]  - radius(d[1]*k*formsize) - 5 })    
+        
+    svg.select("#labels").remove();
+    //svg.select("#labels").selectAll("text")
+    //.attr("x", function(d) {  return symbols.get(d[0])[0] })
+    //.attr("y", function(d) { return symbols.get(d[0])[1]  - radius(d[1]*k*formsize) - 5 })    
     
     
 }); 
@@ -288,6 +297,8 @@ d3.select("#form_sizes").on("input", function() {
     .attr("r", function(d) { return radius(d[1]*k*size)} );
     d3.select("#propsymbolsObs").selectAll("circle")
     .attr("r", function(d) { return radius(d[1]*k*size)} );
+    
+    svg.select("#labels").remove();
 }); 
             
 // Circles opacity
@@ -335,10 +346,12 @@ function plotLayout() {
     
 	svg.append("g")
 		.attr("id","countries")
-		.attr("class", "land")
 		.selectAll(".subunit")
 		.data(topojson.feature(world, world.objects.w).features)
-		.enter().append("path")
+		.enter()
+        .append("path")
+        .attr("id", function(d) { return d.id; })
+        .attr("class","land")
 		.attr("d", path)
 		.attr("clip-path", "url(#clip)")  
 
@@ -349,20 +362,21 @@ function plotLayout() {
 	    .attr("class", "coasts")
 	    .attr("d", path)
 	    .attr("clip-path", "url(#clip)")  
-    
 }
 
 // ***************************************************************************   
 // PROP SYMBOLS CHORO FUNCTION ***********************************************
 // ***************************************************************************    
 
-function plotPropChoroEvt(filestock, fileratio, fieldweek, k, maptitle) {
+function plotPropChoroEvt(filestock, fileratio, fieldweek, k) {
 	 
 	svg.select("#propsymbolsObs").remove();
     svg.select("#propsymbolsEvt").remove();
+    d3.select("#antenna").remove(); 
     svg.select("#labels").remove();
     svg.select("#legend").remove();
 	svg.select("#legtitle").remove();
+    svg.select("#links").remove();
 	svg.select("#title").remove();
 	//console.log(filestock)
 	var stockById = d3.map()
@@ -387,22 +401,36 @@ function plotPropChoroEvt(filestock, fileratio, fieldweek, k, maptitle) {
 
 	  if (error) throw error;
 
+// Links 
+c = (myrss.split("_"))[1]
+lineLayer = svg.append("g").attr("id", "links") 
+lineLayer.selectAll("line")
+		.data(stockById2)
+		.enter()
+        .append("line")
+        .filter(function(d) { return colorById.get(d[0]) == "event" })
+        .attr("x1", (symbols.get(c))[0])     // x position of the first end of the line
+        .attr("y1", (symbols.get(c))[1])      // y position of the first end of the line
+        .attr("x2", function(d) { return symbols.get(d[0])[0] })
+        .attr("y2", function(d) { return symbols.get(d[0])[1] })
+        .attr("class", "links") ;
 
+// country color    
+    d3.select("#countries").selectAll("path").attr("class","land")    
+    d3.select("#countries").select("#"+c).attr("class","landSelected")
 
-	// ***** Discretization *****
+// Antenna
 
-    //var serie = new geostats(rateById.values());
-    //breaks = (serie.getQuantile(nbreaks));
-    //b = (serie.getQuantile(nbreaks));
-    //b.splice(nbreaks,1);
-    //b.splice(0,1); 
+     svg.append("g").attr("id","antenna")
+       .append("svg:image")
+        .attr('x',(symbols.get(c))[0]-10)
+        .attr('y',(symbols.get(c))[1]-10)
+        .attr('width', 20)
+        .attr('height', 20)
+        .attr("xlink:href","img/antenna.svg");
+               
 
-           
-    //var quantize = d3.scale.threshold()
-    //.domain(b)
-    //.range(d3.range(nbreaks).map(function(i) { return "q" + i + "-" + nbreaks; }));
-
-
+// Circles
 	stockById2 = stockById2.sort(function(a,b){return a[1] < b[1]})
 	  svg.append("g")
 		.attr("id", "propsymbolsEvt")
@@ -437,59 +465,12 @@ function plotPropChoroEvt(filestock, fileratio, fieldweek, k, maptitle) {
             $( "#dialog" ).dialog( "open" );
             $( "#dialog" ).dialog('option', 'title', mylabel + " (" + myid + ")");
             $( "#dialog" ).html("<p>Here display a word cloud for: </p>");
-            
-            
-               // if(myweek<10){sep="0"}else{sep=""}
-    //fileobs = "files/"+myrss+"/observ.tsv";
-    //fileevt = "files/"+myrss+"/evt"+mymodel+".tsv";
-    //fieldweek = "week"+sep+myweek;
             mycloudfile =  "files/"+myrss+"/"+d[0]+"_"+year+"-"+sep+myweek+"_"+mymodel+".tsv";
             console.log(mycloudfile)
             plotWordCloud(mycloudfile)
         }
 
     });
-
-
-// ***** Legend *****  
-    
-//    var legtitle = "Title of the legend";
-//    var xpos = 20;
-//    var ypos = 300;
-//    var boxwidth = 25;
-//    var boxheight = 20;
-//    var boxgap = 20;
-    
-//    var legend = d3.select("svg").append("g").attr("id","legend");
-//    legend.append("g").attr("id","boxes").attr("class",palette)
-//    .selectAll('legendEntry')
-//    .data(quantize.range().reverse())
-//    .enter()
-//    .append('rect')
-//    .attr("x", xpos)
- //   .attr("y", function(d, i) {
-//       return i * boxgap + ypos + boxgap*2;
-//    })
-//   .attr("width", boxwidth)
-//   .attr("height", boxheight)
-//   .attr("class", function(d){return d;});
-    
-//    legend.append("g").attr("id","boxestextes")
-//    .selectAll('legendEntry')
-//    .data(breaks.reverse())
-//    .enter()
-//    .append('text')
-//    .attr("x", xpos + boxwidth + boxgap/2)
-//    .attr("y", function(d, i) {
-//       return i * boxgap + ypos + boxgap*2;
-//    })
-//    .text(function(d, i) {
-//       return breaks[i].toFixed(0);
-//    })
-//    .style({'alignment-baseline': 'middle' , 'font-size':'10'});
-//        
-//    legend.append("g").attr("id","legendtitle").append('text').text(maptitle).attr("x", xpos).attr("y", ypos+boxgap);   
-//    
 
 
 // Labels        
@@ -516,23 +497,43 @@ labelsLayer.selectAll("circle")
 	 	.attr("x", function(d) { return symbols.get(d[0])[0] })
 	 	.attr("y", function(d) { return symbols.get(d[0])[1] - radius(d[1]*k*formsize) - 5 })
         .attr("text-anchor", "middle")
-       // .text(function(d) { return "coucou"}) 
 	 	.text(function(d) { return labels.get(d[0]).toUpperCase()})
         .style({"font-size":"12px", "fill":"#d00202" }) ;
 
     
-      
-        
-
 } 
   size = eval(k);
 
+// Map title
 
-var posx = width/2; var posy = 50;
-svg.append("g").append("text").attr("id","title").text(maptitle)
+    
+    d3.json("files/json/feeds.json", function(json) {
+    data = json   
+    .filter(function(d){return d.id == myrss;})
+	.map(function(d){ return {id : d.id, name: d.name};})
+    svg.append("g").attr("id","title")
+        .append("text")
+        .attr("x", 500)
+     	.attr("y", 40)
+        .text( data[0]["name"])
+        .style({"font-size":"30px", "fill":"#5f5856","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
+        .attr("text-anchor", "middle")   
+    
+        svg.select("#title")
+        .append("text")
+        .attr("x", 500)
+     	.attr("y", 60)
+        .text( myrss)
+        .style({"font-size":"15px", "fill":"#5f5856","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
+        .attr("text-anchor", "middle")    
+    
+    });
+    
 
-.style({"font-size":"25px", "fill":"#6B8087","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
-.attr("text-anchor","middle");  
+
+
+    
+
 
 
 }
@@ -576,6 +577,10 @@ function plotPropChoroObs(filestock, fieldweek, k) {
         .attr("r", function(d) { return radius(d[1]*k*formsize); })
 } 
   size = eval(k);
+    
+
+
+    
 
 
 }
@@ -612,9 +617,8 @@ function plotPropChoroObs(filestock, fieldweek, k) {
 function plotWordCloud(file) {
 
   var width = 450, height= 400; 	
-  var mytagsScale = d3.scale.linear().range([10,60]);
+  var mytagsScale = d3.scale.linear().range([40,60]);
   var fill = d3.scale.category20();	
-
   d3.tsv(file, function(data){
 	var mytags = data
 	.filter(function(d){return +d.freq > 0;})
