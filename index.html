@@ -288,7 +288,17 @@ d3.select("#form_sizes").on("input", function() {
     .attr("r", function(d) { return radius(d[1]*k*size)} );
     d3.select("#propsymbolsObs").selectAll("circle")
     .attr("r", function(d) { return radius(d[1]*k*size)} );
-});             
+}); 
+            
+// Circles opacity
+menu.append("li").html("Symboles transparency")
+menu.append("input").attr("type", "range").attr("id","form_opacity").attr("value",0.8).attr("min",0).attr("max",1).attr("step",0.1)
+
+d3.select("#form_opacity").on("input", function() {
+    d3.select("#propsymbolsObs").selectAll("circle")
+    .style("opacity", this.value);
+    
+});
 
 
 
@@ -481,9 +491,10 @@ function plotPropChoroEvt(filestock, fileratio, fieldweek, k, maptitle) {
 //    legend.append("g").attr("id","legendtitle").append('text').text(maptitle).attr("x", xpos).attr("y", ypos+boxgap);   
 //    
 
+
 // Labels        
+
 labelsLayer = svg.append("g").attr("id", "labels")
-		
 labelsLayer.selectAll("circle")
 		.data(stockById2)
 		.enter()
