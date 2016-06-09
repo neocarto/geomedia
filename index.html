@@ -46,16 +46,17 @@ radialGradient2.attr("id", "radial-gradient2");
 radialGradient2.append("stop").attr("offset", "20%").attr("stop-color", "#ef5a5a");
 radialGradient2.append("stop").attr("offset", "100%").attr("stop-color", "#d10303");      
  
-
+center = 0;
 var projection = d3.geo.armadillo()
     .scale(237)
     .translate([500,400])
     .parallel(20)
-    .rotate([187, 0, 0])
+    .rotate([center, 0, 0])
     .precision(.1);
 
 var path = d3.geo.path().projection(projection);
 
+    
 // FILES TO LOAD 
 
 symbols = d3.map()
@@ -74,6 +75,9 @@ queue()
 			symbols.set(d.id, path.centroid(d));
 			labels.set(d.id, d.properties.name);
 			 })
+        
+        
+        
 
 // ***************************************************************************   
 // HEADER ********************************************************************
@@ -86,12 +90,6 @@ header.append("p")
  	.attr("href", "https://github.com/neocarto/geomedia")
 	.attr("target","_blank")
 	.html("Sources");
-header.append("p")
-	.attr("class","item-header")
-	.append("a")
- 	.attr("href", "#")
-	.attr("target","_blank")
-	.html("Methods");
 header.append("p")
 	.attr("class","item-logo")
 	.html("<img src='img/geomedia_logo.png'></img>");
@@ -106,11 +104,16 @@ var menu =  d3.select("#menu")
 // Default values
 year = 2015;
 myrss="en_AUS_austra_int";
+mysignificativity=0.001;
 myrsslabel="the australian";
 mycountry="FRA";
 mycountrylabel="France";
 myweek = 1;
 mymodel=2;
+medium_sign = 0.01;
+high_sign = 0.001;
+veryhigh_sign =  0.0001 ;            
+            
 
 // Newspapers
 
@@ -129,11 +132,13 @@ $.getJSON('files/json/feeds.json', null, function(data) {
  
 
 menu.append("div").attr("id","spacerss").append("br")
-menu.append("div").attr("id","allrss")
-d3.select("#allrss").html("<input type='checkbox' id='checkrss' name='checkrss'><label for='checkrss' id ='labelcheckrss'>Select All</label>")
-$( "#allrss" ).buttonset();
 
+menu.append("div").attr("id","auoproj")
+d3.select("#auoproj").html("<input type='checkbox' id='checkproj'><label for='checkproj'>Projection auto</label>")
+$('#checkproj').prop('checked', true);
 
+        
+            
 $("#checkrss").change(function() {
     if(this.checked) {
 	$("#menu-rss").hide();
@@ -162,14 +167,18 @@ $("#checkrss").change(function() {
 
 $("#select-rss").selectmenu({ change: function(event, ui) { 
     myrss = ui.item.value; 
+    projbool = $('#checkproj').prop('checked');
+    if (projbool){
+        center = center+(500-(symbols.get(myrss.split("_")[1]))[0])*0.36 ;
+        rotatemap(center);
+    }
     submit();
-    
 }});
-
-
+            
+     
 // Weeks
-
-menu.append("div").attr("id","menu-date-title").append("h2").html("<li>Week <span id='nbweek'>"+myweek+"</span> of "+year+"</li>")
+menu.append("br").append("br")
+menu.append("div").attr("id","menu-date-title").append("h2").html("<li>Week <span id='nbweek'>"+myweek+"</span> (in "+year+")</li>")
 menu.append("div").attr("id","menu-date")
 
 
@@ -193,37 +202,9 @@ menu.append("div").attr("id","menu-date")
 menu.append("div").attr("id","spaceweeks").append("br")
 week = 1;
 
-menu.append("div").attr("id","allweeks")
-d3.select("#allweeks").html("<input type='checkbox' id='checkweek' name='checkweek'><label for='checkweek' id ='labelcheckweek'>Select all</label>")
-$( "#allweeks" ).buttonset();
-
-$("#checkweek").change(function() {
-    if(this.checked) {
-	$("#menu-date").hide();
-	$("#spaceweeks").hide();
-	$("#nbweek").empty();
-	$("#nbweek").append("(All)");
-	$( "#allweeks" ).buttonset( "destroy" );
-	$("#labelcheckweek").html("Choose one");
-	$( "#allweeks" ).buttonset();
-    myweek_tmp = myweek;  
-    myweek = 0;
-    }
-    else {
-	$("#menu-date").show();
-	$("#spaceweeks").show();
-   	myweek = myweek_tmp;
-    	$("#nbweek").empty();
-	$("#nbweek").append(myweek);
-	$( "#allweeks" ).buttonset( "destroy" );
-	$("#labelcheckweek").html("Select All");
-	$( "#allweeks" ).buttonset();
-	}
-   submit();
-});
 
 // Model
-
+menu.append("br").append("br")
 menu.append("h2").html("Time buffer (nb of weeks)")
 menu.append("div").attr("id","radioset")
 d3.select("#radioset").html("<input type='radio' id='radio1' name='radiomodel' value = '2' checked='checked'><label for='radio1'>2 weeks</label><input type='radio' id='radio2' value = '4' name='radiomodel'><label for='radio2'>4 weeks</label><input type='radio' id='radio3' value = '12' name='radiomodel'><label for='radio3'>12 weeks</label>")
@@ -234,7 +215,47 @@ $("#radioset").change(function(){
    submit();
 
 });
+            
+// Significativity
+menu.append("br").append("br")  
+menu.append("div").attr("id","menu-significativity-title").append("h2").html("<li>Significativity threshold</li>")
+menu.append("div").attr("id","radiosign")
+d3.select("#radiosign").html("<input type='radio' id='radios1' name='radiosignificativity' value = "+medium_sign+" checked='checked'><label for='radios1'>Medium</label><input type='radio' id='radios2' value =  "+high_sign+" name='radiosignificativity'><label for='radios2'>High</label><input type='radio' id='radios3' value =  "+veryhigh_sign+" name='radiosignificativity'><label for='radios3'>Very high</label>")
+$( "#radiosign" ).buttonset();
 
+$("#radiosign").change(function(){
+   mysignificativity = $("input[name='radiosignificativity']:checked").val();
+   submit();
+});
+
+// Legend
+menu.append("br").append("br")  
+menu.append("div").attr("id","menu-significativity-title").append("h2").html("<li>How to read the map?</li>")
+
+boxsize = 20
+
+var svglegend = d3.select("#menu").append("svg").attr("width", 270).attr("height", 300)
+
+var legcountry= svglegend.append("g").attr("id", "legcountry");
+pos = 10            
+legcountry.append('rect').attr("x", 0).attr("y",pos).attr("width", boxsize).attr("height", boxsize).attr("class", "land")
+legcountry.append("text").attr("x", 30).attr("y", pos+14).text("World countries").attr("class","textlegend")  
+
+var legcountry= svglegend.append("g").attr("id", "legcountry");
+pos = 40           
+legcountry.append('rect').attr("x", 0).attr("y",pos).attr("width", boxsize).attr("height", boxsize).attr("class", "landSelected")
+legcountry.append("text").attr("x", 30).attr("y", pos+14).text("Issuing country").attr("class","textlegend")  
+
+pos = 70   
+var legrss= svglegend.append("g").attr("id", "legrss");
+legrss.append("svg:image").attr('x',0).attr('y',pos).attr('width', 20).attr('height', 20).attr("xlink:href","img/antenna.svg");         
+legrss.append("text").attr("x", 30).attr("y", pos+14).text("RSS location").attr("class","textlegend")  
+
+pos = 100 
+var legevent= svglegend.append("g").attr("id", "legevent");
+legevent.append("circle").attr("class", "legendcircle").attr("cx", 10).attr("cy", ypos=pos+10).attr("r", 10 ).attr("class", "event")   
+//legcountry.append('circle').attr("x", 0).attr("y",pos).attr("width", boxsize).attr("height", boxsize)  
+legevent.append("text").attr("x", 30).attr("y", pos+14).text("Geomediatic events").attr("class","textlegend")  
 
 // Submit
  
@@ -243,80 +264,26 @@ function submit() {
     fileobs = "files/"+myrss+"/observ.tsv";
     fileevt = "files/"+myrss+"/evt"+mymodel+".tsv";
     fieldweek = "week"+sep+myweek;
+    plotPropChoroObs(fileobs, fieldweek, 10)
+    plotPropChoroEvt(fileobs, fileevt, fieldweek, 10)
 
-
-center = (symbols.get((myrss.split("_"))[1]))[0]
-//projection.rotate([0,0,0]);
-console.log(center)    
-svg.selectAll("path").attr("d", path);
- 
- plotPropChoroObs(fileobs, fieldweek, 10)
- plotPropChoroEvt(fileobs, fileevt, fieldweek, 10)
 
 };
 
-// Map configuration
-menu.append("br")
-menu.append("br")
-menu.append("h2").html("Map configuration")
-
-// Rotate
-menu.append("li").html("base map rotation")
-menu.append("input").attr("type", "range").attr("id","form_rotate").attr("value",0).attr("min",0).attr("max",360).attr("step",1)
-
-d3.select("#form_rotate").on("input", function() { 
-    projection.rotate([eval(this.value),0,0]);
-    svg.selectAll("path").attr("d", path);
-    //svg.selectAll("path").attr("class", "land");
-    
-    
-    svg.data(topojson.feature(world,world.objects.c).features).enter().append("circle").attr("id",function(d){ symbols.set(d.id, path.centroid(d))})
-    svg.select("#propsymbolsEvt").selectAll("circle")
-    .attr("cx", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
-    .attr("cy", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
-    svg.select("#propsymbolsObs").selectAll("circle")
-    .attr("cx", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
-    .attr("cy", function(d) {  if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
-        
-    svg.select("#labels").remove();
-    //svg.select("#labels").selectAll("text")
-    //.attr("x", function(d) {  return symbols.get(d[0])[0] })
-    //.attr("y", function(d) { return symbols.get(d[0])[1]  - radius(d[1]*k*formsize) - 5 })    
-    
-    
-}); 
-
-// Sizes
-menu.append("li").html("Symboles sizes")
-menu.append("input").attr("type", "range").attr("id","form_sizes").attr("value",1).attr("min",0.1).attr("max",2).attr("step",0.1)
-
-d3.select("#form_sizes").on("input", function() {
-    k = this.value;
-    formsize = eval(k);	
-    d3.select("#propsymbolsEvt").selectAll("circle")
-    .attr("r", function(d) { return radius(d[1]*k*size)} );
-    d3.select("#propsymbolsObs").selectAll("circle")
-    .attr("r", function(d) { return radius(d[1]*k*size)} );
-    
-    svg.select("#labels").remove();
-}); 
             
-// Circles opacity
-menu.append("li").html("Symboles transparency")
-menu.append("input").attr("type", "range").attr("id","form_opacity").attr("value",0.8).attr("min",0).attr("max",1).attr("step",0.1)
-
-d3.select("#form_opacity").on("input", function() {
-    d3.select("#propsymbolsObs").selectAll("circle")
-    .style("opacity", this.value);
-    
-});
-
-
+function rotatemap(center) { 
+    projection.rotate([center,0,0]);
+    svg.selectAll("path").attr("d", path);
+    svg.data(topojson.feature(world,world.objects.c).features).enter().append("circle").attr("id",function(d){ symbols.set(d.id, path.centroid(d))})
+   }           
+            
 
 // ***************************************************************************   
 // BASEMAP FUNCTION **********************************************************
 // *************************************************************************** 
-   
+
+       
+            
 function plotLayout() {
     
     var graticule = d3.geo.graticule();
@@ -374,22 +341,20 @@ function plotPropChoroEvt(filestock, fileratio, fieldweek, k) {
     svg.select("#propsymbolsEvt").remove();
     d3.select("#antenna").remove(); 
     svg.select("#labels").remove();
-    svg.select("#legend").remove();
-	svg.select("#legtitle").remove();
     svg.select("#links").remove();
 	svg.select("#title").remove();
 	//console.log(filestock)
 	var stockById = d3.map()
 	var rateById = d3.map()
     var colorById = d3.map()
-       	stockById2 = [];
+       	stockById = [];
 	var myfieldstock = "d."+fieldweek;
 	var myfieldratio = "d."+fieldweek;
 
     // Files to load    
 	 queue()
      
-     .defer(d3.tsv, filestock, function(d) { stockById2.push([d.id, +eval(myfieldstock)]) })
+     .defer(d3.tsv, filestock, function(d) { stockById.push([d.id, +eval(myfieldstock)]) })
      .defer(d3.tsv, fileratio, function(d) {
             val = eval(myfieldratio);
             rateById.set(d.id, val) ; 
@@ -402,10 +367,14 @@ function plotPropChoroEvt(filestock, fileratio, fieldweek, k) {
 	  if (error) throw error;
 
 // Links 
+        
 c = (myrss.split("_"))[1]
+projbool = $('#checkproj').prop('checked');
+
+if(projbool){    
 lineLayer = svg.append("g").attr("id", "links") 
 lineLayer.selectAll("line")
-		.data(stockById2)
+		.data(stockById)
 		.enter()
         .append("line")
         .filter(function(d) { return colorById.get(d[0]) == "event" })
@@ -414,7 +383,8 @@ lineLayer.selectAll("line")
         .attr("x2", function(d) { return symbols.get(d[0])[0] })
         .attr("y2", function(d) { return symbols.get(d[0])[1] })
         .attr("class", "links") ;
-
+}
+        
 // country color    
     d3.select("#countries").selectAll("path").attr("class","land")    
     d3.select("#countries").select("#"+c).attr("class","landSelected")
@@ -431,11 +401,11 @@ lineLayer.selectAll("line")
                
 
 // Circles
-	stockById2 = stockById2.sort(function(a,b){return a[1] < b[1]})
+	stockById = stockById.sort(function(a,b){return a[1] < b[1]})
 	  svg.append("g")
 		.attr("id", "propsymbolsEvt")
 		.selectAll("circle")
-		.data(stockById2)
+		.data(stockById)
 		.enter()
         .append("circle")
         //.filter(function(d) { rateById.get(d[0]) > 2 })
@@ -477,7 +447,7 @@ lineLayer.selectAll("line")
 
 labelsLayer = svg.append("g").attr("id", "labels")
 labelsLayer.selectAll("circle")
-		.data(stockById2)
+		.data(stockById)
 		.enter()
         .append("text")
         .filter(function(d) { return colorById.get(d[0]) == "event" })
@@ -490,7 +460,7 @@ labelsLayer.selectAll("circle")
         
         
 labelsLayer.selectAll("circle")
-		.data(stockById2)
+		.data(stockById)
 		.enter()
         .append("text")
         .filter(function(d) { return colorById.get(d[0]) == "event" })
@@ -506,6 +476,20 @@ labelsLayer.selectAll("circle")
 
 // Map title
 
+function getDateOfISOWeek(w, y) {
+    var simple = new Date(y, 0, 1 + (w - 1) * 7);
+    var dow = simple.getDay();
+    var ISOweekStart = simple;
+    if (dow <= 4)
+        ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+    else
+        ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+    return (ISOweekStart);
+    
+    
+     
+}
+    
     
     d3.json("files/json/feeds.json", function(json) {
     data = json   
@@ -518,12 +502,12 @@ labelsLayer.selectAll("circle")
         .text( data[0]["name"])
         .style({"font-size":"30px", "fill":"#5f5856","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
         .attr("text-anchor", "middle")   
-    
+
         svg.select("#title")
         .append("text")
         .attr("x", 500)
      	.attr("y", 60)
-        .text( myrss)
+        .text( getDateOfISOWeek(myweek,2015))
         .style({"font-size":"15px", "fill":"#5f5856","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
         .attr("text-anchor", "middle")    
     
@@ -546,48 +530,93 @@ function plotPropChoroObs(filestock, fieldweek, k) {
 	svg.select("#propsymbolsObs").remove();
     svg.select("#propsymbolsEvt").remove();
     svg.select("#labels").remove();
-	svg.select("#legend").remove();
-	svg.select("#legtitle").remove();
 	svg.select("#title").remove();
-	var stockById = d3.map()
-       	stockById2 = [];
+   	stockById = [];
 	var myfieldstock = "d."+fieldweek;
     // Files to load    
 	 queue()
 
      
-     .defer(d3.tsv, filestock, function(d) { stockById2.push([d.id, +eval(myfieldstock)]) })
+     .defer(d3.tsv, filestock, function(d) { stockById.push([d.id, +eval(myfieldstock)]) })
      .await(ready);
 	function ready(error, data) {
 
 	  if (error) throw error;
 
 
-	stockById2 = stockById2.sort(function(a,b){return a[1] < b[1]})
+	stockById = stockById.sort(function(a,b){return a[1] < b[1]})
 	  svg.append("g")
 		.attr("id", "propsymbolsObs")
 		.selectAll("circle")
-		.data(stockById2)
+		.data(stockById)
 		.enter().append("circle")
          .attr("class", "notevent")
 		//.attr("class", function(d) { return quantize(rateById.get(d[0]));   })
 		.attr("id", function(d) { return d[0]; })
 	 	.attr("cx", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
 		.attr("cy", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
-        .attr("r", function(d) { return radius(d[1]*k*formsize); })
+        .attr("r", function(d) { return radius(d[1]*k); })
+        
+        legmax = 1
+        for (var i = 0; i < stockById.length; i++) {
+            if(stockById[i][1]>legmax){legmax = stockById[i][1]}
+        }
+            
+    drawlegendcircles(legmax, k, 130);
+        
+        
+
 } 
   size = eval(k);
-    
 
 
-    
 
 
 }
 
             
-            
-            
+// ***************************************************************************   
+// Legend circles ***********************************************************
+// ***************************************************************************    
+
+function drawlegendcircles(valmax, k, pos) { 
+    
+menu.select("#legcircles").remove();  
+var legcircles= svglegend.append("g").attr("id", "legcircles");
+legcircles.append("text").attr("x", 0).attr("y", pos+14).text("Number of feeds").attr("class","textlegend")      
+
+    
+console.log(valmax);
+console.log(radius(valmax*k));    
+
+//legcircles.append("text").attr("x", 0).attr("y", pos).text(valmax).attr("class","textlegend")  
+//legcircles.append("text").attr("x", 100).attr("y", pos).text(radius(valmax*k)).attr("class","textlegend")
+
+// Big circle   
+rmax = radius(valmax*k)
+xpos = rmax
+ypos = pos + 14 + rmax + 14
+x2 = xpos + rmax + 10
+legcircles.append("circle").attr("class", "legendcircle").attr("cx", xpos).attr("cy", ypos).attr("r", rmax )
+legcircles.append("line").attr("x1", xpos).attr("y1", pos + 28).attr("x2", x2).attr("y2", pos + 28).attr("class", "lineslegend") ;     
+legcircles.append("text").attr("x", x2 + 3).attr("y", pos+30).text(valmax).attr("class","textlegend2")  
+
+// Small circle
+rmin = radius(1*k)
+ypos = pos + 28 + 2 * rmax - rmin
+legcircles.append("circle").attr("class", "legendcircle").attr("cx", xpos).attr("cy", ypos).attr("r", rmin )
+legcircles.append("line").attr("x1", xpos).attr("y1", ypos - rmin).attr("x2", x2).attr("y2", ypos - rmin).attr("class", "lineslegend") ;     
+legcircles.append("text").attr("x", x2 + 3).attr("y", ypos - rmin + 2).text(1).attr("class","textlegend2")  
+
+// Medium circle 
+valmid = Math.round(valmax /3)
+rmid = radius(valmid*k)
+ypos = pos + 28 + 2 * rmax - rmid
+legcircles.append("circle").attr("class", "legendcircle").attr("cx", xpos).attr("cy", ypos).attr("r", rmid )
+legcircles.append("line").attr("x1", xpos).attr("y1", ypos - rmid).attr("x2", x2).attr("y2", ypos - rmid).attr("class", "lineslegend") ;     
+legcircles.append("text").attr("x", x2 + 3).attr("y", ypos - rmid + 2).text(valmid).attr("class","textlegend2")  
+}     
+
             
 
 // ***************************************************************************   
@@ -660,12 +689,12 @@ function plotWordCloud(file) {
   }
 }
 
+            
+           
 
 // DISPLAY BASEMAP            
 plotLayout()
-// DISPLAY FIRST CIRCLES LAYER
-//plotPropCircles("database/test/datatest1.tsv",0.2,"stock","red",myfile)   
-//plotPropChoroCircles("database/test/datatest1.tsv","stock2","ratio2",0.2, 8,"Reds",myfile)     
+ 
 } 
 
 </script>
