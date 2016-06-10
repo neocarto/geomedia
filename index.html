@@ -91,9 +91,34 @@ header.append("p")
 	.attr("target","_blank")
 	.html("Sources");
 header.append("p")
+	.attr("class","item-header")
+    .attr("id","credits")
+	.append("a")
+    .style({fill: "#ffc914", cursor:"pointer"}) 
+	.html("Credits");
+header.append("p")
 	.attr("class","item-logo")
 	.html("<img src='img/geomedia_logo.png'></img>");
 
+textcredits = "<div align='center'>";      
+textcredits += "<h2>Timothée GIRAUD<span class='textlegend '> [R development]<sup> (1) </sup></span></h2><li>timothee.giraud@ums-riate.fr</li>";  
+textcredits += "<h2>Claude GRASLAND <span class='textlegend '>[R development & Statistics]<sup> (2) </sup></span></h2><li>claude.grasland@parisgeo.cnrs.fr</li>";  
+textcredits += "<h2>Nicolas LAMBERT <span class='textlegend '>[Geovisualization & Web development]<sup> (1) </sup></span></h2><li>nicolas.lambert@ums-riate.fr</li>";  
+textcredits += "<h2>Huges PECOUT <span class='textlegend '>[R development]<sup> (3) </sup></span></h2><li>hugues.pecout@gis-cist.fr</li>";  
+textcredits += "<br/>";                  
+textcredits += "(1)<br/><br/><img src='img/logo_riate.png' height='20px'></img><br/><br/>";   
+textcredits += "(2)<br><br/><img src='img/logoGeoCites.gif' height='40px'></img><br/><br/>";   
+textcredits += "(3)<br><br/><img src='img/logo_cist.jpg' height='30px'></img><br/>";   
+textcredits += "</div>";
+
+d3.select("#credits")           
+.on('click', function(){
+            $( "#dialog" ).dialog( "open" );
+            $( "#dialog" ).dialog('option', 'title', "Credits");
+            $( "#dialog" ).html(textcredits);
+
+            })
+            
 // ***************************************************************************   
 // MENU **********************************************************************
 // *************************************************************************** 
@@ -129,10 +154,8 @@ $.getJSON('files/json/feeds.json', null, function(data) {
    });
 });
 
- 
 
 menu.append("div").attr("id","spacerss").append("br")
-
 menu.append("div").attr("id","auoproj")
 d3.select("#auoproj").html("<input type='checkbox' id='checkproj'><label for='checkproj'>Projection auto</label>")
 $('#checkproj').prop('checked', true);
@@ -169,6 +192,7 @@ $("#select-rss").selectmenu({ change: function(event, ui) {
     myrss = ui.item.value; 
     projbool = $('#checkproj').prop('checked');
     if (projbool){
+        d3.select("#countries").selectAll("path").attr("class","land")   
         center = center+(500-(symbols.get(myrss.split("_")[1]))[0])*0.36 ;
         rotatemap(center);
     }
@@ -387,7 +411,7 @@ lineLayer.selectAll("line")
         
 // country color    
     d3.select("#countries").selectAll("path").attr("class","land")    
-    d3.select("#countries").select("#"+c).attr("class","landSelected")
+    d3.select("#countries").selectAll("#"+c).attr("class","landSelected")
 
 // Antenna
 
@@ -642,6 +666,9 @@ legcircles.append("text").attr("x", x2 + 3).attr("y", ypos - rmid + 2).text(valm
     });
  
   });
+            
+
+          
 
 function plotWordCloud(file) {
 
