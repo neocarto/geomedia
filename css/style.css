@@ -140,9 +140,9 @@ font-family: 'Enriqueta', arial, serif;
 .links {
 	fill:none ;
 	stroke: #b25656;
-	stroke-width: 1px; 
-	stroke-opacity: .3;
-	stroke-dasharray: 1 
+	stroke-width: 7px; 
+	stroke-opacity: .1;
+	
 }
 
 .event {

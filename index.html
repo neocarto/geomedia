@@ -62,11 +62,13 @@ var path = d3.geo.path().projection(projection);
 symbols = d3.map()
 labels = d3.map()
 listeRSS = d3.map()
+rssxy = d3.map()
 
 queue()
-	.defer(d3.json, "files/geom/world.topojson")
+	.defer(d3.json, "files/geom/world.topojson") 
+	.defer(d3.json, "files/geom/antens.topojson") 
 	.await(ready);
-        function ready(error,world,countries) {
+        function ready(error,world, antens) {
 	if (error) throw error;
      	svg.data(topojson.feature(world,world.objects.c).features)
 		.enter()
@@ -74,7 +76,16 @@ queue()
 		.attr("id",function(d){
 			symbols.set(d.id, path.centroid(d));
 			labels.set(d.id, d.properties.name);
-			 })
+            })
+        svg.data(topojson.feature(antens,antens.objects.a).features)
+		.enter()
+		.append("div")
+		.attr("id",function(d){
+			rssxy.set(d.id, path.centroid(d));
+            })
+        
+
+ 
         
         
         
@@ -129,12 +140,12 @@ var menu =  d3.select("#menu")
 // Default values
 year = 2015;
 myrss="en_AUS_austra_int";
-mysignificativity=0.001;
+mysignificativity=0.01;
 myrsslabel="the australian";
 mycountry="FRA";
 mycountrylabel="France";
 myweek = 1;
-mymodel=2;
+mymodel=4;
 medium_sign = 0.01;
 high_sign = 0.001;
 veryhigh_sign =  0.0001 ;            
@@ -153,7 +164,6 @@ $.getJSON('files/json/feeds.json', null, function(data) {
     $( "#select-rss" ).append("<option selected value = "+item.id+" selected>"+item.name+"</option>");
    });
 });
-
 
 menu.append("div").attr("id","spacerss").append("br")
 menu.append("div").attr("id","auoproj")
@@ -231,7 +241,7 @@ week = 1;
 menu.append("br").append("br")
 menu.append("h2").html("Time buffer (nb of weeks)")
 menu.append("div").attr("id","radioset")
-d3.select("#radioset").html("<input type='radio' id='radio1' name='radiomodel' value = '2' checked='checked'><label for='radio1'>2 weeks</label><input type='radio' id='radio2' value = '4' name='radiomodel'><label for='radio2'>4 weeks</label><input type='radio' id='radio3' value = '12' name='radiomodel'><label for='radio3'>12 weeks</label>")
+d3.select("#radioset").html("<input type='radio' id='radio1' name='radiomodel' value = '4' checked='checked'><label for='radio1'>4 weeks</label><input type='radio' id='radio2' value = '12' name='radiomodel'><label for='radio2'>12 weeks</label><input type='radio' id='radio3' value = '24' name='radiomodel'><label for='radio3'>24 weeks</label>")
 $( "#radioset" ).buttonset();
 
 $("#radioset").change(function(){
@@ -287,11 +297,10 @@ function submit() {
     if(myweek<10){sep="0"}else{sep=""}
     fileobs = "files/"+myrss+"/observ.tsv";
     fileevt = "files/"+myrss+"/evt"+mymodel+".tsv";
-    fieldweek = "week"+sep+myweek;
-    plotPropChoroObs(fileobs, fieldweek, 10)
-    plotPropChoroEvt(fileobs, fileevt, fieldweek, 10)
-
-
+    fieldweek = "week"+sep+myweek;   
+    plotObs(fileobs, fieldweek, 10)
+    plotEvt(fileobs, fileevt, fieldweek, 10)
+    console.log(mysignificativity);
 };
 
             
@@ -299,6 +308,7 @@ function rotatemap(center) {
     projection.rotate([center,0,0]);
     svg.selectAll("path").attr("d", path);
     svg.data(topojson.feature(world,world.objects.c).features).enter().append("circle").attr("id",function(d){ symbols.set(d.id, path.centroid(d))})
+    svg.data(topojson.feature(antens,antens.objects.a).features).enter().append("svg:image").attr("id",function(d){ rssxy.set(d.id, path.centroid(d))})
    }           
             
 
@@ -359,7 +369,7 @@ function plotLayout() {
 // PROP SYMBOLS CHORO FUNCTION ***********************************************
 // ***************************************************************************    
 
-function plotPropChoroEvt(filestock, fileratio, fieldweek, k) {
+function plotEvt(filestock, fileratio, fieldweek, k) {
 	 
 	svg.select("#propsymbolsObs").remove();
     svg.select("#propsymbolsEvt").remove();
@@ -382,7 +392,7 @@ function plotPropChoroEvt(filestock, fileratio, fieldweek, k) {
      .defer(d3.tsv, fileratio, function(d) {
             val = eval(myfieldratio);
             rateById.set(d.id, val) ; 
-            if (val > 2){col = "event";} else {col="notevent";}
+            if (val <= mysignificativity){col = "event";} else {col="notevent";}
             colorById.set(d.id, col)
             })
      .await(ready);
@@ -390,6 +400,46 @@ function plotPropChoroEvt(filestock, fileratio, fieldweek, k) {
 
 	  if (error) throw error;
 
+
+
+// Map title
+
+function getDateOfISOWeek(w, y) {
+    var simple = new Date(y, 0, 1 + (w - 1) * 7);
+    var dow = simple.getDay();
+    var ISOweekStart = simple;
+    if (dow <= 4)
+        ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+    else
+        ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+    return (ISOweekStart);
+     
+     
+}
+    
+    
+    d3.json("files/json/feeds.json", function(json) {
+    data = json   
+    .filter(function(d){return d.id == myrss;})
+	.map(function(d){ return {id : d.id, name: d.name};})
+       svg.append("g").attr("id","title")
+        .append("text")
+        .attr("x", 500)
+     	.attr("y", 40)
+        .text( data[0]["name"])
+        .style({"font-size":"30px", "fill":"#5f5856","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
+        .attr("text-anchor", "middle")   
+
+        svg.select("#title")
+        .append("text")
+        .attr("x", 500)
+     	.attr("y", 60)
+        .text( getDateOfISOWeek(myweek,2015))
+        .style({"font-size":"15px", "fill":"#5f5856","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
+        .attr("text-anchor", "middle")    
+    
+    });        
+        
 // Links 
         
 c = (myrss.split("_"))[1]
@@ -402,8 +452,8 @@ lineLayer.selectAll("line")
 		.enter()
         .append("line")
         .filter(function(d) { return colorById.get(d[0]) == "event" })
-        .attr("x1", (symbols.get(c))[0])     // x position of the first end of the line
-        .attr("y1", (symbols.get(c))[1])      // y position of the first end of the line
+        .attr("x1", (rssxy.get(myrss))[0])     // x position of the first end of the line
+        .attr("y1", (rssxy.get(myrss))[1])      // y position of the first end of the line
         .attr("x2", function(d) { return symbols.get(d[0])[0] })
         .attr("y2", function(d) { return symbols.get(d[0])[1] })
         .attr("class", "links") ;
@@ -417,12 +467,11 @@ lineLayer.selectAll("line")
 
      svg.append("g").attr("id","antenna")
        .append("svg:image")
-        .attr('x',(symbols.get(c))[0]-10)
-        .attr('y',(symbols.get(c))[1]-10)
+        .attr('x',(rssxy.get(myrss))[0]-10)
+        .attr('y',(rssxy.get(myrss))[1]-10)
         .attr('width', 20)
         .attr('height', 20)
         .attr("xlink:href","img/antenna.svg");
-               
 
 // Circles
 	stockById = stockById.sort(function(a,b){return a[1] < b[1]})
@@ -498,78 +547,34 @@ labelsLayer.selectAll("circle")
 } 
   size = eval(k);
 
-// Map title
-
-function getDateOfISOWeek(w, y) {
-    var simple = new Date(y, 0, 1 + (w - 1) * 7);
-    var dow = simple.getDay();
-    var ISOweekStart = simple;
-    if (dow <= 4)
-        ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
-    else
-        ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
-    return (ISOweekStart);
-    
-    
-     
-}
-    
-    
-    d3.json("files/json/feeds.json", function(json) {
-    data = json   
-    .filter(function(d){return d.id == myrss;})
-	.map(function(d){ return {id : d.id, name: d.name};})
-    svg.append("g").attr("id","title")
-        .append("text")
-        .attr("x", 500)
-     	.attr("y", 40)
-        .text( data[0]["name"])
-        .style({"font-size":"30px", "fill":"#5f5856","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
-        .attr("text-anchor", "middle")   
-
-        svg.select("#title")
-        .append("text")
-        .attr("x", 500)
-     	.attr("y", 60)
-        .text( getDateOfISOWeek(myweek,2015))
-        .style({"font-size":"15px", "fill":"#5f5856","font-family":"arial, tahoma, geneva, sans-serif","font-style":"bold"})
-        .attr("text-anchor", "middle")    
-    
-    });
-    
-
-
-
-    
-
-
 
 }
             
             
             
 
-function plotPropChoroObs(filestock, fieldweek, k) {
+function plotObs(filestock, fieldweek, k) {
 	 
 	svg.select("#propsymbolsObs").remove();
     svg.select("#propsymbolsEvt").remove();
+    svg.select("#links").remove();
+    d3.select("#antenna").remove(); 
     svg.select("#labels").remove();
 	svg.select("#title").remove();
    	stockById = [];
 	var myfieldstock = "d."+fieldweek;
+    //console.log(myfieldstock)
     // Files to load    
 	 queue()
-
-     
      .defer(d3.tsv, filestock, function(d) { stockById.push([d.id, +eval(myfieldstock)]) })
      .await(ready);
-	function ready(error, data) {
+    	function ready(error, data) {
 
 	  if (error) throw error;
-
-
+    console.log(myfieldstock)    
+ 
 	stockById = stockById.sort(function(a,b){return a[1] < b[1]})
-	  svg.append("g")
+    svg.append("g")
 		.attr("id", "propsymbolsObs")
 		.selectAll("circle")
 		.data(stockById)
@@ -580,7 +585,7 @@ function plotPropChoroObs(filestock, fieldweek, k) {
 	 	.attr("cx", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
 		.attr("cy", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
         .attr("r", function(d) { return radius(d[1]*k); })
-        
+       
         legmax = 1
         for (var i = 0; i < stockById.length; i++) {
             if(stockById[i][1]>legmax){legmax = stockById[i][1]}
@@ -608,14 +613,7 @@ function drawlegendcircles(valmax, k, pos) {
 menu.select("#legcircles").remove();  
 var legcircles= svglegend.append("g").attr("id", "legcircles");
 legcircles.append("text").attr("x", 0).attr("y", pos+14).text("Number of feeds").attr("class","textlegend")      
-
-    
-console.log(valmax);
-console.log(radius(valmax*k));    
-
-//legcircles.append("text").attr("x", 0).attr("y", pos).text(valmax).attr("class","textlegend")  
-//legcircles.append("text").attr("x", 100).attr("y", pos).text(radius(valmax*k)).attr("class","textlegend")
-
+ 
 // Big circle   
 rmax = radius(valmax*k)
 xpos = rmax

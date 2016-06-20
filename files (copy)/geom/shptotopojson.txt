@@ -1,0 +1,16 @@
+Nicolas Lambert, 2016
+
+ogr2ogr -t_srs EPSG:4326 w.shp NED_10m_eckertIV_v3.shp
+ogr2ogr -t_srs EPSG:4326 c.shp NED_10m_eckertIV_centres_v3.shp
+ogr2ogr -f GeoJSON w.json w.shp
+ogr2ogr -f GeoJSON c.json c.shp
+topojson -o world.topojson --id-property ISO3 --properties name=name -- w.json c.json
+rm w.*
+rm c.*
+
+
+
+ogr2ogr -t_srs EPSG:4326 a.shp antens.shp
+ogr2ogr -f GeoJSON a.json a.shp
+topojson -o antens.topojson --id-property id --properties name=name -- a.json
+rm a.*
