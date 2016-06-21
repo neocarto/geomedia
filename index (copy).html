@@ -140,12 +140,12 @@ var menu =  d3.select("#menu")
 // Default values
 year = 2015;
 myrss="en_AUS_austra_int";
-mysignificativity=0.001;
+mysignificativity=0.01;
 myrsslabel="the australian";
 mycountry="FRA";
 mycountrylabel="France";
 myweek = 1;
-mymodel=2;
+mymodel=4;
 medium_sign = 0.01;
 high_sign = 0.001;
 veryhigh_sign =  0.0001 ;            
@@ -241,7 +241,7 @@ week = 1;
 menu.append("br").append("br")
 menu.append("h2").html("Time buffer (nb of weeks)")
 menu.append("div").attr("id","radioset")
-d3.select("#radioset").html("<input type='radio' id='radio1' name='radiomodel' value = '2' checked='checked'><label for='radio1'>2 weeks</label><input type='radio' id='radio2' value = '4' name='radiomodel'><label for='radio2'>4 weeks</label><input type='radio' id='radio3' value = '12' name='radiomodel'><label for='radio3'>12 weeks</label>")
+d3.select("#radioset").html("<input type='radio' id='radio1' name='radiomodel' value = '4' checked='checked'><label for='radio1'>4 weeks</label><input type='radio' id='radio2' value = '12' name='radiomodel'><label for='radio2'>12 weeks</label><input type='radio' id='radio3' value = '24' name='radiomodel'><label for='radio3'>24 weeks</label>")
 $( "#radioset" ).buttonset();
 
 $("#radioset").change(function(){
@@ -297,11 +297,10 @@ function submit() {
     if(myweek<10){sep="0"}else{sep=""}
     fileobs = "files/"+myrss+"/observ.tsv";
     fileevt = "files/"+myrss+"/evt"+mymodel+".tsv";
-    fieldweek = "week"+sep+myweek;
-    plotPropChoroObs(fileobs, fieldweek, 10)
-    plotPropChoroEvt(fileobs, fileevt, fieldweek, 10)
-
-
+    fieldweek = "week"+sep+myweek;   
+    plotObs(fileobs, fieldweek, 10)
+    plotEvt(fileobs, fileevt, fieldweek, 10)
+    console.log(mysignificativity);
 };
 
             
@@ -370,7 +369,7 @@ function plotLayout() {
 // PROP SYMBOLS CHORO FUNCTION ***********************************************
 // ***************************************************************************    
 
-function plotPropChoroEvt(filestock, fileratio, fieldweek, k) {
+function plotEvt(filestock, fileratio, fieldweek, k) {
 	 
 	svg.select("#propsymbolsObs").remove();
     svg.select("#propsymbolsEvt").remove();
@@ -393,7 +392,7 @@ function plotPropChoroEvt(filestock, fileratio, fieldweek, k) {
      .defer(d3.tsv, fileratio, function(d) {
             val = eval(myfieldratio);
             rateById.set(d.id, val) ; 
-            if (val > 2){col = "event";} else {col="notevent";}
+            if (val <= mysignificativity){col = "event";} else {col="notevent";}
             colorById.set(d.id, col)
             })
      .await(ready);
@@ -554,28 +553,28 @@ labelsLayer.selectAll("circle")
             
             
 
-function plotPropChoroObs(filestock, fieldweek, k) {
+function plotObs(filestock, fieldweek, k) {
 	 
 	svg.select("#propsymbolsObs").remove();
     svg.select("#propsymbolsEvt").remove();
     svg.select("#links").remove();
+    d3.select("#antenna").remove(); 
     svg.select("#labels").remove();
 	svg.select("#title").remove();
    	stockById = [];
 	var myfieldstock = "d."+fieldweek;
+    //console.log(myfieldstock)
     // Files to load    
 	 queue()
-
-     
      .defer(d3.tsv, filestock, function(d) { stockById.push([d.id, +eval(myfieldstock)]) })
      .await(ready);
-	function ready(error, data) {
+    	function ready(error, data) {
 
 	  if (error) throw error;
-
-
+    console.log(myfieldstock)    
+ 
 	stockById = stockById.sort(function(a,b){return a[1] < b[1]})
-	  svg.append("g")
+    svg.append("g")
 		.attr("id", "propsymbolsObs")
 		.selectAll("circle")
 		.data(stockById)
@@ -586,7 +585,7 @@ function plotPropChoroObs(filestock, fieldweek, k) {
 	 	.attr("cx", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
 		.attr("cy", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
         .attr("r", function(d) { return radius(d[1]*k); })
-        
+       
         legmax = 1
         for (var i = 0; i < stockById.length; i++) {
             if(stockById[i][1]>legmax){legmax = stockById[i][1]}
