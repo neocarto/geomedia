@@ -203,7 +203,7 @@ $("#select-rss").selectmenu({ change: function(event, ui) {
     projbool = $('#checkproj').prop('checked');
     if (projbool){
         d3.select("#countries").selectAll("path").attr("class","land")   
-        center = center+(500-(symbols.get(myrss.split("_")[1]))[0])*0.36 ;
+        center = center+(500-( rssxy.get(myrss))[0])*0.36 ;
         rotatemap(center);
     }
     submit();
