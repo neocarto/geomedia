@@ -146,7 +146,8 @@ font-family: 'Enriqueta', arial, serif;
 }
 
 .event {
-	fill : url(#radial-gradient2);
+	/*	fill : url(#radial-gradient2);	*/
+	fill : #e34e4e;
 	stroke-width: 1.3px;
 	stroke : #ffffff ; }
 
