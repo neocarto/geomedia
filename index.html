@@ -152,7 +152,8 @@ myweeklabel = weektodatefirst (year, myweek)
 mymodel=4;
 medium_sign = 0.01;
 high_sign = 0.001;
-veryhigh_sign =  0.0001 ;            
+veryhigh_sign =  0.0001 ;  
+relabsbool = false ;            
             
 
 // Newspapers
@@ -170,38 +171,13 @@ $.getJSON('files/json/feeds.json', null, function(data) {
 });
 
 menu.append("div").attr("id","spacerss").append("br")
-menu.append("div").attr("id","auoproj")
+menu.append("span").attr("id","auoproj")
 d3.select("#auoproj").html("<input type='checkbox' id='checkproj'><label for='checkproj'>Projection auto</label>")
 $('#checkproj').prop('checked', true);
 
-        
-            
-$("#checkrss").change(function() {
-    if(this.checked) {
-	$("#menu-rss").hide();
-	$("#spacerss").hide();
-	$("#rss-title").empty();
-	$("#rss-title").append("Newspapers (All)");
-	$( "#allrss" ).buttonset( "destroy" );
-	$("#labelcheckrss").html("Choose one");
-	$( "#allrss" ).buttonset();
-    myrss_tmp = myrss;  
-    myrss = "0";
-	}
-    else {
-	$("#menu-rss").show();
-	$("#spacerss").show();
-	$("#rss-title").empty();
-	$("#rss-title").append("Newspapers");
-	$( "#allrss" ).buttonset( "destroy" );
-	$("#labelcheckrss").html("Select All");
-	$( "#allrss" ).buttonset();
-    myrss = myrss_tmp ;
-	}
-    submit();
-    
-});
-
+menu.append("span").attr("id","relabs")
+d3.select("#relabs").html("<input type='checkbox' id='checkrelabs'><label for='checkrelabs'>Relative data</label>")
+       
 $("#select-rss").selectmenu({ change: function(event, ui) { 
     myrss = ui.item.value; 
     projbool = $('#checkproj').prop('checked');
@@ -212,6 +188,15 @@ $("#select-rss").selectmenu({ change: function(event, ui) {
     }
     submit();
 }});
+
+            
+$('#relabs').change(function(){
+    relabsbool = $('#checkrelabs').prop('checked');
+    submit();
+  });
+          
+            
+          
             
      
 // Weeks
@@ -416,7 +401,7 @@ function plotEvt(filestock, fileratio, fieldweek, k) {
        	stockById = [];
 	var myfieldstock = "d."+fieldweek;
 	var myfieldratio = "d."+fieldweek;
-
+    
     // Files to load    
 	 queue()
      
@@ -510,7 +495,8 @@ lineLayer.selectAll("line")
 		.attr("id", function(d) { return d[0]; })
 	 	.attr("cx", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
 		.attr("cy", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
-        .attr("r", function(d) { return radius(d[1]*k*formsize); })
+        //.attr("r", function(d) { return radius(d[1]*k*formsize); })
+        .attr("r", function(d) { if (relabsbool){ return radius(((d[1])/total*100)*k); } else {return radius(d[1]*k);}  })
     	.call(d3.helper.tooltip()
                 .style({
                         color: 'white',
@@ -522,7 +508,8 @@ lineLayer.selectAll("line")
                         'border-radius': '6px'
                        })
                 .text(function(d){
-               return "Feeds: "+d[1]+"<br/>Significativity: "+parseFloat(rateById.get(d[0])).toFixed(4);
+                if (!relabsbool) { return "News: "+d[1]+"<br/>Significativity: "+parseFloat(rateById.get(d[0])).toFixed(4);}
+                if (relabsbool) { return "News: "+d[1]+"/"+total+" = "+Math.round(((d[1])/total)*100)+" %<br/>Significativity: "+parseFloat(rateById.get(d[0])).toFixed(4);}
       
           }))
         .on('mouseover', function(d){
@@ -556,7 +543,12 @@ labelsLayer.selectAll("circle")
         .append("text")
         .filter(function(d) { return colorById.get(d[0]) == "event" })
 	 	.attr("x", function(d) { return symbols.get(d[0])[0] })
-	 	.attr("y", function(d) { return symbols.get(d[0])[1] - radius(d[1]*k*formsize) - 5 })
+	 	
+        .attr("y", function(d) { 
+            if(relabsbool) {return symbols.get(d[0])[1] - radius(((d[1])/total*100)*k) - 5}
+            if(!relabsbool) {return symbols.get(d[0])[1] - radius(d[1]*k) - 5}
+
+})
         .attr("text-anchor", "middle")
        // .text(function(d) { return "coucou"}) 
 	 	.text(function(d) { return labels.get(d[0]).toUpperCase()})
@@ -569,7 +561,10 @@ labelsLayer.selectAll("circle")
         .append("text")
         .filter(function(d) { return colorById.get(d[0]) == "event" })
 	 	.attr("x", function(d) { return symbols.get(d[0])[0] })
-	 	.attr("y", function(d) { return symbols.get(d[0])[1] - radius(d[1]*k*formsize) - 5 })
+	 	.attr("y", function(d) { 
+            if(relabsbool) {return symbols.get(d[0])[1] - radius(((d[1])/total*100)*k) - 5}
+            if(!relabsbool) {return symbols.get(d[0])[1] - radius(d[1]*k) - 5}
+})
         .attr("text-anchor", "middle")
 	 	.text(function(d) { return labels.get(d[0]).toUpperCase()})
         .style({"font-size":"12px", "fill":"#d00202" }) ;
@@ -602,9 +597,10 @@ function plotObs(filestock, fieldweek, k) {
     	function ready(error, data) {
 
 	  if (error) throw error;
-    //console.log(myfieldstock)    
- 
-	stockById = stockById.sort(function(a,b){return a[1] < b[1]})
+    stockById = stockById.sort(function(a,b){return a[1] < b[1]})
+    total = d3.zip.apply(undefined,stockById)
+    total = d3.max(total.map(d=>d3.sum(d)))
+    
     svg.append("g")
 		.attr("id", "propsymbolsObs")
 		.selectAll("circle")
@@ -615,8 +611,8 @@ function plotObs(filestock, fieldweek, k) {
 		.attr("id", function(d) { return d[0]; })
 	 	.attr("cx", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[0]} else {return "NaN"} })
 		.attr("cy", function(d) { if(typeof symbols.get(d[0]) != 'undefined') {return symbols.get(d[0])[1]} else {return "NaN"} })
-        .attr("r", function(d) { return radius(d[1]*k); })
-       
+        .attr("r", function(d) { if (relabsbool){ return radius(((d[1])/total*100)*k); } else {return radius(d[1]*k);}  })
+        //.attr("r", function(d) { return radius(d[1]*k);  })        
         legmax = 1
         for (var i = 0; i < stockById.length; i++) {
             if(stockById[i][1]>legmax){legmax = stockById[i][1]}
@@ -643,10 +639,14 @@ function drawlegendcircles(valmax, k, pos) {
     
 menu.select("#legcircles").remove();  
 var legcircles= svglegend.append("g").attr("id", "legcircles");
-legcircles.append("text").attr("x", 0).attr("y", pos+14).text("Number of feeds").attr("class","textlegend")      
+
+if (!relabsbool) { legcircles.append("text").attr("x", 0).attr("y", pos+14).text("Number of feeds").attr("class","textlegend") }     
+if (relabsbool) { legcircles.append("text").attr("x", 0).attr("y", pos+14).text("Share of feeds (%)").attr("class","textlegend") }     
  
 // Big circle   
+if (relabsbool) {valmax = Math.round((valmax/total)*100)}
 rmax = radius(valmax*k)
+    
 xpos = rmax
 ypos = pos + 14 + rmax + 14
 x2 = xpos + rmax + 10
