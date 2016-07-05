@@ -152,9 +152,9 @@ font-family: 'Enriqueta', arial, serif;
 	stroke : #ffffff ; }
 
 .notevent {
-  fill: #5092de;
-  fill-opacity: 0.1;
-  stroke: none;
+  fill: #5092de;	
+  fill-opacity: 0.3;
+  stroke: none;	
 }
 
 .textlegend {
@@ -181,5 +181,17 @@ font-family: 'Enriqueta', arial, serif;
 	stroke-width: 0.5px; 
 	stroke-dasharray: 0.5 
 }       
+.checkboxes label {
+    display: block;
+    float: left;
+    padding-right: 8px;
+    white-space: nowrap;
+}
+.checkboxes input {
+    vertical-align: middle;
+}
 
+.checkboxes label span {
+    vertical-align: middle;
+}
 
