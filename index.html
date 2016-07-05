@@ -234,13 +234,13 @@ $("#radiosign").change(function(){
 menu.append("br").append("br")
 menu.append("h2").html("<li>Map options</li>")
 menu.append("div").attr("id","auoproj").attr("class","checkboxes")
-d3.select("#auoproj").html("<label for='checkproj'><input type='checkbox' id='checkproj' /> <span>Projection auto</span></label>")
+d3.select("#auoproj").html("<label for='checkproj'><input type='checkbox' id='checkproj' />Auto center</label>")
 $('#checkproj').prop('checked', true);
 //$( "#auoproj" ).buttonset();         
 
 
 menu.append("div").attr("id","relabs").attr("class","checkboxes")
-d3.select("#relabs").html("<label for='checkrelabs'><input type='checkbox' id='checkrelabs' /> <span>Relative data</span></label>")
+d3.select("#relabs").html("<label for='checkrelabs'><input type='checkbox' id='checkrelabs' />Relative data</label>")
 //$( "#relabs" ).buttonset();    
             
 $("#select-rss").selectmenu({ change: function(event, ui) { 
@@ -261,7 +261,7 @@ $('#relabs').change(function(){
   });
             
 menu.append("div").attr("id","showlabels").attr("class","checkboxes")
-d3.select("#showlabels").html("<label for='checkshowlabels'><input type='checkbox' id='checkshowlabels' /> <span>Labels</span></label><br/><br/>")
+d3.select("#showlabels").html("<label for='checkshowlabels'><input type='checkbox' id='checkshowlabels' /> Labels</label>")
 $('#checkshowlabels').prop('checked', true);
 
 $('#checkshowlabels').change(function(){
@@ -269,8 +269,8 @@ $('#checkshowlabels').change(function(){
     submit();
   });
 
-menu.append("div").attr("id","circlesSizes").attr("class","checkboxes")            
-d3.select("#circlesSizes").html("Circle sizes <input type='range' min='1' max='30' id='formCirclesSizes' step = '1' value='10'>")            
+menu.append("div").attr("id","circlesSizes").attr("class","checkboxes")       
+d3.select("#circlesSizes").html("<br/>Circle sizes <input type='range' min='1' max='30' id='formCirclesSizes' step = '1' value='10'>")            
 
 $('#formCirclesSizes').change(function(){
     k = this.value;
