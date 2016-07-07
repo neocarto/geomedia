@@ -269,8 +269,8 @@ $('#checkshowlabels').change(function(){
     submit();
   });
 
-menu.append("div").attr("id","circlesSizes").attr("class","checkboxes")       
-d3.select("#circlesSizes").html("<div>Circle sizes <input type='range' min='1' max='30' id='formCirclesSizes' step = '1' value='10'></div>")            
+menu.append("div").attr("id","circlesSizes")      
+d3.select("#circlesSizes").html("<div class= 'checkboxes'>Circle sizes <input type='range' min='1' max='30' id='formCirclesSizes' step = '1' value='10'></div>")            
 
 $('#formCirclesSizes').change(function(){
     k = this.value;
@@ -408,7 +408,15 @@ function plotLayout() {
 	    .datum(topojson.merge(world, world.objects.w.geometries))
 	    .attr("class", "coasts")
 	    .attr("d", path)
-	    .attr("clip-path", "url(#clip)")  
+	    .attr("clip-path", "url(#clip)")
+    
+    
+    svg.append("svg:image")
+        .attr('x',900)
+        .attr('y',460)
+        .attr('width', 80)
+        .attr('height', 80)
+        .attr("xlink:href","img/anr.svg");
 }
 
 // ***************************************************************************   
